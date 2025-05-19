@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolsOcean - Image to Text (OCR) Tool</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0078ff;
+            --secondary-blue: #005ce6;
+            --light-blue: #e6f3ff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #333;
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-blue);
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        }
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .footer-link {
+            color: var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+        .footer-link:hover {
+            color: var(--secondary-blue);
+            text-decoration: underline;
+        }
+        .progress-bar {
+            height: 6px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+            border-radius: 3px;
+        }
+        .progress {
+            height: 100%;
+            background-color: var(--primary-blue);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        #drop-area.highlight {
+            background-color: var(--light-blue);
+            border-color: var(--primary-blue);
+        }
+        #result-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .social-icon {
+            color: var(--primary-blue);
+            transition: transform 0.3s ease;
+        }
+        .social-icon:hover {
+            transform: scale(1.2);
+            color: var(--secondary-blue);
+        }
+        .profile-img {
+            border: 3px solid var(--primary-blue);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient text-white p-4 shadow-lg">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2 md:mb-0">ToolsOcean</h1>
+            <p class="text-sm md:text-base">Your Ultimate Online Tools Collection</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto p-4 md:p-8">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Image to Text (OCR) Tool</h2>
+            <p class="text-gray-600">Extract text from images instantly with our advanced OCR technology</p>
+        </div>
+
+        <!-- Tool Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Upload Section -->
+            <div class="card bg-white p-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Upload Image</h3>
+                <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-blue-50">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                    <p class="mb-2">Drag & drop an image here or click to browse</p>
+                    <p class="text-sm text-gray-500 mb-4">Supports JPG, PNG, BMP, GIF, WEBP</p>
+                    <input type="file" id="fileInput" class="hidden" accept="image/*">
+                    <button id="browseBtn" class="btn-primary px-4 py-2 rounded-md font-medium">
+                        Browse Files
+                    </button>
+                </div>
+
+                <div id="image-preview-container" class="mt-6 hidden">
+                    <h4 class="text-lg font-medium mb-2 text-gray-700">Preview:</h4>
+                    <div class="flex justify-center">
+                        <img id="preview-image" class="max-w-full max-h-64 rounded-lg object-contain" alt="Preview">
+                    </div>
+                    <div class="mt-4">
+                        <button id="extract-btn" class="btn-primary w-full py-3 rounded-md font-medium">
+                            Extract Text <i class="fas fa-text-height ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="progress-container" class="mt-6 hidden">
+                    <p id="status-message" class="text-center mb-2">Processing image...</p>
+                    <div class="progress-bar">
+                        <div id="progress" class="progress"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card bg-white p-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Extracted Text</h3>
+                <div id="result-container" class="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[300px] max-h-[500px] overflow-y-auto">
+                    <p id="result-text" class="text-gray-700">No text extracted yet. Upload an image to begin.</p>
+                </div>
+                <div class="mt-4 flex gap-3">
+                    <button id="copy-btn" class="btn-primary flex-1 py-2 rounded-md font-medium disabled:opacity-50" disabled>
+                        <i class="far fa-copy mr-2"></i> Copy Text
+                    </button>
+                    <button id="download-btn" class="btn-primary flex-1 py-2 rounded-md font-medium disabled:opacity-50" disabled>
+                        <i class="fas fa-download mr-2"></i> Download as TXT
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Use Section -->
+        <div class="mt-16">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">How to Use Our OCR Tool</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card bg-white p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-upload text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Upload Image</h3>
+                    <p class="text-gray-600">Choose an image from your device or drag & drop it into the upload area.</p>
+                </div>
+                
+                <div class="card bg-white p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-cogs text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Process</h3>
+                    <p class="text-gray-600">Our advanced OCR engine will analyze and extract text from your image.</p>
+                </div>
+                
+                <div class="card bg-white p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-file-alt text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Get Results</h3>
+                    <p class="text-gray-600">Copy or download the extracted text for your use in various applications.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- About Section -->
+    <section class="bg-white py-12 mt-10">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">About ToolsOcean</h2>
+                <p class="text-gray-600">Your one-stop destination for useful online tools</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Our Mission</h3>
+                    <p class="text-gray-600 mb-4">At ToolsOcean, we strive to provide free, high-quality online tools to help you solve everyday problems more efficiently. Our collection of tools ranges from converters and calculators to generators and analyzers.</p>
+                    <p class="text-gray-600 mb-6">Whether you're a student, professional, or casual user, we have tools designed to make your digital tasks easier and faster.</p>
+                    <div class="inline-block bg-blue-100 text-blue-800 font-semibold px-4 py-2 rounded-full">
+                        <span>🇮🇳 Proudly Made in India</span>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <div class="w-48 h-48 rounded-full overflow-hidden profile-img">
+                        <img src="https://page1.genspark.site/v1/base64_upload/ff62613fc936f7e7939c33e1bc984c5f" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 pt-12 pb-6">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <!-- Credits -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800">Credits</h3>
+                    <p class="text-gray-600 mb-2">Developed by: <span class="font-medium">MD Naeem Akhtar</span></p>
+                </div>
+                
+                <!-- Follow Us -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800">Follow Us</h3>
+                    <div class="flex flex-col space-y-2">
+                        <a href="https://instagram.com/naeem_bhai_078" class="flex items-center footer-link" target="_blank">
+                            <i class="fab fa-instagram mr-2 social-icon"></i> @naeem_bhai_078
+                        </a>
+                        <a href="https://instagram.com/toolsocean.site" class="flex items-center footer-link" target="_blank">
+                            <i class="fab fa-instagram mr-2 social-icon"></i> @toolsocean.site
+                        </a>
+                        <a href="https://youtube.com/@toolsocean" class="flex items-center footer-link" target="_blank">
+                            <i class="fab fa-youtube mr-2 social-icon"></i> ToolsOcean
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Contact -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800">Contact Us</h3>
+                    <a href="mailto:toolocean.site@gmail.com" class="flex items-center footer-link">
+                        <i class="far fa-envelope mr-2 social-icon"></i> toolocean.site@gmail.com
+                    </a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-6 text-center">
+                <p class="text-gray-600 text-sm">&copy; 2023 ToolsOcean. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Tesseract Worker
+        const worker = Tesseract.createWorker({
+            logger: progress => {
+                if (progress.status === 'recognizing text') {
+                    document.getElementById('status-message').textContent = 'Recognizing text...';
+                    document.getElementById('progress').style.width = `${progress.progress * 100}%`;
+                }
+            }
+        });
+
+        // DOM Elements
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const extractBtn = document.getElementById('extract-btn');
+        const resultText = document.getElementById('result-text');
+        const progressContainer = document.getElementById('progress-container');
+        const copyBtn = document.getElementById('copy-btn');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // Event Listeners
+        browseBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        // Extract text when button is clicked
+        extractBtn.addEventListener('click', () => {
+            processImage();
+        });
+
+        // Copy button functionality
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(resultText.textContent).then(() => {
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+
+        // Download button functionality
+        downloadBtn.addEventListener('click', () => {
+            const text = resultText.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'extracted_text.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Handle the uploaded files
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            
+            // Check if file is an image
+            if (!file.type.match('image.*')) {
+                alert('Please upload an image file (JPG, PNG, BMP, etc.)');
+                return;
+            }
+            
+            // Display image preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+                // Reset result
+                resultText.textContent = "No text extracted yet. Click 'Extract Text' to begin.";
+                copyBtn.disabled = true;
+                downloadBtn.disabled = true;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Process the image using Tesseract OCR
+        async function processImage() {
+            // Show progress
+            progressContainer.classList.remove('hidden');
+            document.getElementById('status-message').textContent = 'Initializing OCR engine...';
+            document.getElementById('progress').style.width = '0%';
+            
+            try {
+                await worker.load();
+                await worker.loadLanguage('eng');
+                await worker.initialize('eng');
+                
+                document.getElementById('status-message').textContent = 'Analyzing image...';
+                
+                const { data } = await worker.recognize(previewImage.src);
+                
+                resultText.textContent = data.text || "No text was detected in this image.";
+                copyBtn.disabled = false;
+                downloadBtn.disabled = false;
+                
+                // Clean up
+                await worker.terminate();
+            } catch (error) {
+                console.error('Error during OCR processing:', error);
+                resultText.textContent = "An error occurred while processing the image. Please try again.";
+            } finally {
+                progressContainer.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
