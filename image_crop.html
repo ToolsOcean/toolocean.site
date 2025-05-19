@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Crop Tool - ToolsOcean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0077ff;
+            --secondary-color: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .header {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+        .btn-primary:hover {
+            background-color: #0066dd;
+        }
+        .container {
+            max-width: 1140px;
+        }
+        .footer {
+            background-color: #333;
+            color: #fff;
+        }
+        .img-container {
+            max-height: 500px;
+            margin-bottom: 20px;
+        }
+        #image {
+            max-width: 100%;
+        }
+        .cropper-container {
+            margin: 0 auto;
+        }
+        .preview-container {
+            overflow: hidden;
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            background-color: #f5f5f5;
+        }
+        .preview-container img {
+            max-width: 100%;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .social-icons a {
+            color: var(--primary-color);
+            margin: 0 10px;
+            font-size: 24px;
+        }
+        .social-icons a:hover {
+            color: #0066dd;
+        }
+        .hidden {
+            display: none;
+        }
+        .aspect-ratio-box {
+            position: relative;
+            height: 0;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            overflow: hidden;
+        }
+        .aspect-ratio-box img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header py-4 px-4 shadow-md">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2 md:mb-0">Image Crop Tool</h1>
+            <div class="text-sm">
+                <span class="hidden md:inline">Powered by</span> 
+                <span class="font-bold">ToolsOcean</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-center">Upload and Crop Your Image</h2>
+            
+            <!-- Step 1: Upload Section -->
+            <div id="upload-section" class="mb-6">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                    <p class="mb-4">Drag & drop an image or click to browse</p>
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                    <label for="file-input" class="btn-primary px-4 py-2 rounded cursor-pointer inline-block">
+                        Choose Image
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Step 2: Crop Section -->
+            <div id="crop-section" class="mb-6 hidden">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="md:w-3/4">
+                        <h3 class="text-lg font-medium mb-2">Adjust Crop Area</h3>
+                        <div class="img-container">
+                            <img id="image" src="" alt="Source Image">
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-4 justify-center">
+                            <button id="crop-btn" class="btn-primary px-4 py-2 rounded">
+                                <i class="fas fa-crop-alt mr-1"></i> Crop Image
+                            </button>
+                            <button id="reset-btn" class="bg-gray-600 text-white px-4 py-2 rounded">
+                                <i class="fas fa-undo mr-1"></i> Reset
+                            </button>
+                            <button id="upload-new-btn" class="bg-gray-600 text-white px-4 py-2 rounded">
+                                <i class="fas fa-upload mr-1"></i> Upload New Image
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/4">
+                        <h3 class="text-lg font-medium mb-2">Controls</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Aspect Ratio:</label>
+                            <select id="aspect-ratio" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="free">Free</option>
+                                <option value="1:1">1:1 (Square)</option>
+                                <option value="4:3">4:3</option>
+                                <option value="16:9">16:9</option>
+                                <option value="3:4">3:4 (Portrait)</option>
+                                <option value="9:16">9:16 (Story)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Zoom:</label>
+                            <input type="range" id="zoom" min="0.1" max="3" step="0.1" value="1" class="w-full">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rotation:</label>
+                            <div class="flex justify-between">
+                                <button id="rotate-left" class="bg-gray-200 px-3 py-1 rounded">
+                                    <i class="fas fa-undo"></i> -90°
+                                </button>
+                                <button id="rotate-right" class="bg-gray-200 px-3 py-1 rounded">
+                                    <i class="fas fa-redo"></i> +90°
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Preview & Download Section -->
+            <div id="result-section" class="hidden">
+                <div class="flex flex-col items-center">
+                    <h3 class="text-lg font-medium mb-3">Cropped Result</h3>
+                    <div class="preview-container mb-4">
+                        <img id="preview" src="" alt="Cropped Preview">
+                    </div>
+                    <div id="loader" class="loader hidden"></div>
+                    <div class="flex flex-wrap gap-3 mt-4 justify-center">
+                        <button id="download-btn" class="btn-primary px-4 py-2 rounded">
+                            <i class="fas fa-download mr-1"></i> Download
+                        </button>
+                        <button id="crop-again-btn" class="bg-gray-600 text-white px-4 py-2 rounded">
+                            <i class="fas fa-crop mr-1"></i> Crop Again
+                        </button>
+                        <button id="new-image-btn" class="bg-gray-600 text-white px-4 py-2 rounded">
+                            <i class="fas fa-image mr-1"></i> New Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-3">How to Use</h2>
+            <ol class="list-decimal pl-5 space-y-2">
+                <li>Upload an image using the 'Choose Image' button or drag and drop.</li>
+                <li>Adjust the crop area by dragging the corners or edges.</li>
+                <li>Select an aspect ratio from the dropdown if needed.</li>
+                <li>Use zoom slider and rotation buttons to adjust your image.</li>
+                <li>Click 'Crop Image' to preview your cropped result.</li>
+                <li>Download your cropped image using the 'Download' button.</li>
+            </ol>
+        </div>
+    </main>
+
+    <!-- About Section -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">About ToolsOcean</h2>
+            <div class="flex flex-col md:flex-row">
+                <div class="md:w-3/4 pr-0 md:pr-6">
+                    <p class="mb-4">ToolsOcean provides free online utilities to make your digital life easier. Our tools are designed to be simple, efficient, and accessible from any device. From image manipulation to text converters, we have everything you need.</p>
+                    <p class="mb-4">Made with ❤️ in India</p>
+                </div>
+                <div class="md:w-1/4 flex justify-center">
+                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500">
+                        <img src="" alt="MD Naeem Akhtar" id="creator-img" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-8 px-4">
+        <div class="container mx-auto">
+            <div class="flex flex-wrap">
+                <!-- Credits Section -->
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h3 class="text-lg font-semibold mb-3">Credits</h3>
+                    <p>Developed by: <strong>MD Naeem Akhtar</strong></p>
+                    <p class="mt-2">Made in India 🇮🇳</p>
+                </div>
+
+                <!-- Contact Section -->
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h3 class="text-lg font-semibold mb-3">Contact Us</h3>
+                    <p><i class="fas fa-envelope mr-2"></i> toolocean.site@gmail.com</p>
+                </div>
+
+                <!-- Social Media Section -->
+                <div class="w-full md:w-1/3">
+                    <h3 class="text-lg font-semibold mb-3">Follow Us</h3>
+                    <div class="social-icons flex flex-wrap">
+                        <a href="https://instagram.com/naeem_bhai_078" target="_blank" title="Naeem's Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://instagram.com/toolsocean.site" target="_blank" title="ToolsOcean Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://youtube.com/@toolsocean" target="_blank" title="YouTube Channel">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center">
+                <p>&copy; <span id="current-year"></span> ToolsOcean. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const fileInput = document.getElementById('file-input');
+            const image = document.getElementById('image');
+            const uploadSection = document.getElementById('upload-section');
+            const cropSection = document.getElementById('crop-section');
+            const resultSection = document.getElementById('result-section');
+            const previewImage = document.getElementById('preview');
+            const downloadBtn = document.getElementById('download-btn');
+            const cropBtn = document.getElementById('crop-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const uploadNewBtn = document.getElementById('upload-new-btn');
+            const cropAgainBtn = document.getElementById('crop-again-btn');
+            const newImageBtn = document.getElementById('new-image-btn');
+            const aspectRatioSelect = document.getElementById('aspect-ratio');
+            const zoomInput = document.getElementById('zoom');
+            const rotateLeftBtn = document.getElementById('rotate-left');
+            const rotateRightBtn = document.getElementById('rotate-right');
+            const loader = document.getElementById('loader');
+            const currentYear = document.getElementById('current-year');
+            const creatorImg = document.getElementById('creator-img');
+            
+            // Set current year in footer
+            currentYear.textContent = new Date().getFullYear();
+
+            // Set creator image (using the image from the message)
+            creatorImg.src = "https://raw.githubusercontent.com/username/repo/main/creator-image.jpg";
+            
+            let cropper;
+            
+            // Handle file input change
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files && files.length) {
+                    const file = files[0];
+                    
+                    // Check if the file is an image
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please select an image file.');
+                        return;
+                    }
+                    
+                    // Create file reader
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Set image source
+                        image.src = e.target.result;
+                        
+                        // Show crop section
+                        uploadSection.classList.add('hidden');
+                        cropSection.classList.remove('hidden');
+                        resultSection.classList.add('hidden');
+                        
+                        // Initialize cropper after image is loaded
+                        image.onload = function() {
+                            if (cropper) {
+                                cropper.destroy();
+                            }
+                            
+                            cropper = new Cropper(image, {
+                                aspectRatio: NaN,
+                                viewMode: 1,
+                                dragMode: 'move',
+                                autoCropArea: 0.8,
+                                restore: false,
+                                guides: true,
+                                center: true,
+                                highlight: false,
+                                cropBoxMovable: true,
+                                cropBoxResizable: true,
+                                toggleDragModeOnDblclick: true,
+                            });
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Handle drag and drop
+            const dropArea = uploadSection.querySelector('.border-dashed');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('bg-blue-50', 'border-blue-300');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('bg-blue-50', 'border-blue-300');
+            }
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+            
+            // Handle aspect ratio change
+            aspectRatioSelect.addEventListener('change', function() {
+                if (!cropper) return;
+                
+                const value = this.value;
+                let aspectRatio;
+                
+                switch (value) {
+                    case '1:1':
+                        aspectRatio = 1;
+                        break;
+                    case '4:3':
+                        aspectRatio = 4/3;
+                        break;
+                    case '16:9':
+                        aspectRatio = 16/9;
+                        break;
+                    case '3:4':
+                        aspectRatio = 3/4;
+                        break;
+                    case '9:16':
+                        aspectRatio = 9/16;
+                        break;
+                    default:
+                        aspectRatio = NaN;
+                }
+                
+                cropper.setAspectRatio(aspectRatio);
+            });
+            
+            // Handle zoom
+            zoomInput.addEventListener('input', function() {
+                if (!cropper) return;
+                cropper.zoomTo(parseFloat(this.value));
+            });
+            
+            // Handle rotation
+            rotateLeftBtn.addEventListener('click', function() {
+                if (!cropper) return;
+                cropper.rotate(-90);
+            });
+            
+            rotateRightBtn.addEventListener('click', function() {
+                if (!cropper) return;
+                cropper.rotate(90);
+            });
+            
+            // Crop image
+            cropBtn.addEventListener('click', function() {
+                if (!cropper) return;
+                
+                loader.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    const croppedCanvas = cropper.getCroppedCanvas({
+                        minWidth: 256,
+                        minHeight: 256,
+                        maxWidth: 4096,
+                        maxHeight: 4096,
+                        fillColor: '#fff',
+                        imageSmoothingEnabled: true,
+                        imageSmoothingQuality: 'high',
+                    });
+                    
+                    if (!croppedCanvas) {
+                        alert('Failed to crop the image. Please try again.');
+                        loader.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Display the cropped image
+                    previewImage.src = croppedCanvas.toDataURL();
+                    
+                    // Show result section
+                    cropSection.classList.add('hidden');
+                    resultSection.classList.remove('hidden');
+                    
+                    loader.classList.add('hidden');
+                }, 500);
+            });
+            
+            // Reset cropper
+            resetBtn.addEventListener('click', function() {
+                if (!cropper) return;
+                cropper.reset();
+                aspectRatioSelect.value = 'free';
+                zoomInput.value = 1;
+            });
+            
+            // Upload new image
+            uploadNewBtn.addEventListener('click', function() {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                fileInput.value = '';
+                uploadSection.classList.remove('hidden');
+                cropSection.classList.add('hidden');
+                resultSection.classList.add('hidden');
+            });
+            
+            // Crop again
+            cropAgainBtn.addEventListener('click', function() {
+                resultSection.classList.add('hidden');
+                cropSection.classList.remove('hidden');
+            });
+            
+            // New image
+            newImageBtn.addEventListener('click', function() {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                fileInput.value = '';
+                uploadSection.classList.remove('hidden');
+                cropSection.classList.add('hidden');
+                resultSection.classList.add('hidden');
+            });
+            
+            // Download cropped image
+            downloadBtn.addEventListener('click', function() {
+                if (!previewImage.src) return;
+                
+                // Create a link element
+                const link = document.createElement('a');
+                link.download = 'cropped-image.png';
+                link.href = previewImage.src;
+                
+                // Append to the document
+                document.body.appendChild(link);
+                
+                // Trigger click
+                link.click();
+                
+                // Clean up
+                document.body.removeChild(link);
+            });
+
+            // Set creator image to the one from the conversation
+            const imgUrl = cropSection.querySelector('#image').src;
+            if (imgUrl) {
+                creatorImg.src = imgUrl;
+            }
+        });
+    </script>
+</body>
+</html>
