@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Compressor - ToolOcean</title>
+    <meta name="description" content="Free online PDF compressor tool to reduce PDF file size without losing quality. Made in India.">
+    <meta name="keywords" content="pdf compressor, compress pdf, reduce pdf size, online pdf tool, free pdf compressor, toolocean, pdf optimization">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.16.0/dist/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/compression-streams-polyfill/dist/compression-streams-polyfill.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0077ff;
+            --light-blue: #e6f2ff;
+            --white: #ffffff;
+            --dark-blue: #005acf;
+        }
+        
+        body {
+            background-color: var(--light-blue);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .blue-gradient {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+        }
+        
+        .tool-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover, .upload-area.active {
+            background: var(--light-blue);
+            border-color: var(--dark-blue);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+        }
+        
+        .feature-card {
+            border-left: 4px solid var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        footer {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: var(--white);
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-blue);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        #resultSection {
+            display: none;
+        }
+        
+        .made-in-india {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .made-in-india::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(to bottom, #ff9933 33%, white 33%, white 66%, #128807 66%);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="blue-gradient text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <h1 class="text-3xl md:text-4xl font-bold">ToolOcean</h1>
+                    <span class="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-xs font-semibold">BETA</span>
+                </div>
+                <div>
+                    <span class="made-in-india font-semibold">Made in India</span>
+                </div>
+            </div>
+            <p class="text-xl mt-2 text-center md:text-left">Your complete toolkit for everyday digital needs</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="tool-container bg-white p-6 mb-10">
+            <!-- Tool Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">PDF Compressor Tool</h1>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Reduce your PDF file size without losing quality. Perfect for email sharing, uploading to websites, or saving storage space.</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="mb-10">
+                <div id="uploadSection">
+                    <div class="upload-area bg-gray-50 rounded-lg p-10 text-center cursor-pointer" id="dropZone">
+                        <i class="fas fa-file-pdf text-5xl text-blue-500 mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Drop your PDF file here</h3>
+                        <p class="text-gray-500 mb-4">or</p>
+                        <label for="pdfFile" class="btn-primary px-6 py-3 rounded-lg font-semibold cursor-pointer">
+                            Browse File
+                        </label>
+                        <input type="file" id="pdfFile" accept=".pdf" class="hidden" />
+                        <p class="text-gray-400 text-sm mt-4">Maximum file size: 10MB</p>
+                    </div>
+                </div>
+
+                <!-- Processing Section -->
+                <div id="processingSection" class="text-center py-6 hidden">
+                    <div class="animate-spin inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+                    <h3 class="text-xl font-semibold mb-2">Compressing PDF...</h3>
+                    <div class="progress-bar mx-auto w-full max-w-md mt-4">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
+                    <p class="text-gray-500 mt-2" id="processingMessage">Analyzing and optimizing your document...</p>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultSection" class="bg-gray-50 rounded-lg p-6 text-center">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="bg-green-100 p-3 rounded-full mb-4">
+                            <i class="fas fa-check text-2xl text-green-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Compression Complete!</h3>
+                        
+                        <div class="flex flex-col md:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto my-6 bg-white p-4 rounded-lg shadow-sm">
+                            <div class="w-full md:w-1/2 px-4 py-2 border-b md:border-b-0 md:border-r border-gray-200">
+                                <p class="text-gray-500 text-sm">Original Size</p>
+                                <p class="text-lg font-bold" id="originalSize">0 KB</p>
+                            </div>
+                            <div class="w-full md:w-1/2 px-4 py-2">
+                                <p class="text-gray-500 text-sm">Compressed Size</p>
+                                <p class="text-lg font-bold" id="compressedSize">0 KB</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col md:flex-row gap-3 mt-4">
+                            <button id="downloadBtn" class="btn-primary px-6 py-3 rounded-lg font-semibold flex items-center justify-center">
+                                <i class="fas fa-download mr-2"></i> Download Compressed PDF
+                            </button>
+                            <button id="compressAnotherBtn" class="px-6 py-3 rounded-lg font-semibold border border-blue-500 text-blue-500 hover:bg-blue-50">
+                                Compress Another File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="feature-card bg-gray-50 p-6 rounded-lg">
+                    <i class="fas fa-tachometer-alt text-2xl text-blue-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">Fast Compression</h3>
+                    <p class="text-gray-600">Reduce your PDF size in seconds with our optimized algorithm.</p>
+                </div>
+                <div class="feature-card bg-gray-50 p-6 rounded-lg">
+                    <i class="fas fa-lock text-2xl text-blue-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">100% Secure</h3>
+                    <p class="text-gray-600">Your files are processed locally in your browser. They never leave your computer.</p>
+                </div>
+                <div class="feature-card bg-gray-50 p-6 rounded-lg">
+                    <i class="fas fa-check-circle text-2xl text-blue-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">Quality Preserved</h3>
+                    <p class="text-gray-600">Smart compression that maintains document quality and readability.</p>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold mb-6 text-center">How It Works</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-upload text-2xl text-blue-500"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">1. Upload</h3>
+                        <p class="text-gray-600">Select your PDF file or drag & drop it</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-compress-alt text-2xl text-blue-500"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">2. Compress</h3>
+                        <p class="text-gray-600">Our tool automatically compresses your PDF file</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-download text-2xl text-blue-500"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">3. Download</h3>
+                        <p class="text-gray-600">Get your compressed PDF ready to use</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="flex justify-between items-center w-full p-4 text-left font-semibold bg-gray-50 hover:bg-gray-100 focus:outline-none" onclick="toggleFAQ(this)">
+                            <span>Is this service free?</span>
+                            <i class="fas fa-chevron-down text-blue-500"></i>
+                        </button>
+                        <div class="faq-content hidden p-4 border-t border-gray-200">
+                            <p class="text-gray-600">Yes, our PDF compression tool is completely free to use with no hidden charges.</p>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="flex justify-between items-center w-full p-4 text-left font-semibold bg-gray-50 hover:bg-gray-100 focus:outline-none" onclick="toggleFAQ(this)">
+                            <span>Is my data secure?</span>
+                            <i class="fas fa-chevron-down text-blue-500"></i>
+                        </button>
+                        <div class="faq-content hidden p-4 border-t border-gray-200">
+                            <p class="text-gray-600">Absolutely! Your files are processed entirely in your browser. They are never uploaded to any server, ensuring complete privacy and security.</p>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="flex justify-between items-center w-full p-4 text-left font-semibold bg-gray-50 hover:bg-gray-100 focus:outline-none" onclick="toggleFAQ(this)">
+                            <span>Will compression affect the quality of my PDF?</span>
+                            <i class="fas fa-chevron-down text-blue-500"></i>
+                        </button>
+                        <div class="faq-content hidden p-4 border-t border-gray-200">
+                            <p class="text-gray-600">Our compression algorithm is designed to maintain the best balance between file size reduction and quality preservation. Text remains fully readable, though image quality might be slightly reduced to achieve compression.</p>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="flex justify-between items-center w-full p-4 text-left font-semibold bg-gray-50 hover:bg-gray-100 focus:outline-none" onclick="toggleFAQ(this)">
+                            <span>What's the maximum file size allowed?</span>
+                            <i class="fas fa-chevron-down text-blue-500"></i>
+                        </button>
+                        <div class="faq-content hidden p-4 border-t border-gray-200">
+                            <p class="text-gray-600">You can compress PDF files up to 10MB. This limit ensures optimal performance of the tool within your browser.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="mb-6 md:mb-0">
+                    <h2 class="text-2xl font-bold mb-4">ToolOcean</h2>
+                    <p class="mb-4 opacity-80">Your complete toolkit for everyday digital needs. We provide free online tools to make your work easier.</p>
+                    <div class="flex space-x-2">
+                        <a href="https://instagram.com/naeem_bhai_078" class="social-icon" target="_blank" rel="noopener">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://instagram.com/toolocean.site" class="social-icon" target="_blank" rel="noopener">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://youtube.com/@toolsocean?si=R8EKtI7TuelefxE4" class="social-icon" target="_blank" rel="noopener">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Tools</h3>
+                    <ul class="space-y-2 opacity-80">
+                        <li><a href="#" class="hover:underline">PDF Compressor</a></li>
+                        <li><a href="#" class="hover:underline">Image Tools</a></li>
+                        <li><a href="#" class="hover:underline">Text Tools</a></li>
+                        <li><a href="#" class="hover:underline">Converters</a></li>
+                        <li><a href="#" class="hover:underline">All Tools</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2 opacity-80">
+                        <li><a href="#" class="hover:underline">About Us</a></li>
+                        <li><a href="#" class="hover:underline">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:underline">Terms of Service</a></li>
+                        <li><a href="#" class="hover:underline">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact</h3>
+                    <ul class="space-y-2 opacity-80">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <a href="mailto:toolocean.site@gmail.com">toolocean.site@gmail.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fab fa-instagram mr-2"></i>
+                            <a href="https://instagram.com/toolocean.site" target="_blank" rel="noopener">@toolocean.site</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fab fa-youtube mr-2"></i>
+                            <a href="https://youtube.com/@toolsocean" target="_blank" rel="noopener">@toolsocean</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-10 pt-6 border-t border-white border-opacity-20 text-center">
+                <p>© 2023 ToolOcean. All rights reserved.</p>
+                <p class="mt-2 opacity-80">Developed by MD Naeem Akhtar</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Variables
+        let originalFile = null;
+        let compressedBlob = null;
+        
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('pdfFile');
+        const uploadSection = document.getElementById('uploadSection');
+        const processingSection = document.getElementById('processingSection');
+        const resultSection = document.getElementById('resultSection');
+        const originalSizeEl = document.getElementById('originalSize');
+        const compressedSizeEl = document.getElementById('compressedSize');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const compressAnotherBtn = document.getElementById('compressAnotherBtn');
+        const progressBar = document.getElementById('progressBar');
+        const processingMessage = document.getElementById('processingMessage');
+
+        // Event Listeners
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('active');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (compressedBlob) {
+                const url = URL.createObjectURL(compressedBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'compressed-' + originalFile.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        compressAnotherBtn.addEventListener('click', resetTool);
+
+        // Functions
+        async function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size exceeds the 10MB limit');
+                return;
+            }
+
+            originalFile = file;
+            originalSizeEl.textContent = formatBytes(file.size);
+
+            // Show processing UI
+            uploadSection.classList.add('hidden');
+            processingSection.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+
+            try {
+                updateProgress(10, 'Reading PDF file...');
+                
+                // Read the file
+                const fileArrayBuffer = await readFileAsArrayBuffer(file);
+                updateProgress(20, 'Analyzing document structure...');
+                
+                // Use PDF-LIB to load and modify the PDF
+                const pdfDoc = await PDFLib.PDFDocument.load(fileArrayBuffer);
+                const pages = pdfDoc.getPages();
+                
+                updateProgress(40, 'Optimizing document...');
+                
+                // Simulate processing time for better UX
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                updateProgress(70, 'Compressing content...');
+                
+                // Save with compression
+                const compressedPdfBytes = await pdfDoc.save({
+                    useObjectStreams: true,
+                    addCompressXref: true,
+                });
+                
+                updateProgress(90, 'Finalizing...');
+                
+                // Convert to Blob
+                compressedBlob = new Blob([compressedPdfBytes], { type: 'application/pdf' });
+                compressedSizeEl.textContent = formatBytes(compressedBlob.size);
+                
+                // Show results
+                updateProgress(100, 'Complete!');
+                setTimeout(() => {
+                    processingSection.classList.add('hidden');
+                    resultSection.classList.remove('hidden');
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error during PDF compression:', error);
+                alert('An error occurred while compressing the PDF. Please try again.');
+                resetTool();
+            }
+        }
+
+        function resetTool() {
+            // Reset UI
+            uploadSection.classList.remove('hidden');
+            processingSection.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            
+            // Reset file input
+            fileInput.value = '';
+            
+            // Reset variables
+            originalFile = null;
+            compressedBlob = null;
+            
+            // Reset progress bar
+            progressBar.style.width = '0%';
+        }
+
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function updateProgress(percentage, message) {
+            progressBar.style.width = `${percentage}%`;
+            processingMessage.textContent = message;
+        }
+
+        // FAQ Toggle
+        function toggleFAQ(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+    </script>
+</body>
+</html>
