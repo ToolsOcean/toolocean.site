@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Lock/Unlock Tool - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/downloadjs@1.4.7/download.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+        }
+        .tool-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #0066ff;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0055cc;
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #0066ff, #00ccff);
+        }
+        .drop-zone {
+            border: 2px dashed #0066ff;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .drop-zone:hover, .drop-zone.active {
+            background-color: rgba(0, 102, 255, 0.05);
+            border-color: #0055cc;
+        }
+        .tab {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            border-color: #0066ff;
+            color: #0066ff;
+            font-weight: bold;
+        }
+        .success-message {
+            background-color: #d1fae5;
+            border-left: 4px solid #10b981;
+        }
+        .error-message {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-10">
+            <div class="header-gradient py-6 rounded-lg mb-4 text-white">
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">PDF Lock/Unlock Tool</h1>
+                <p class="text-lg">Secure your PDF files with password protection or remove existing passwords</p>
+            </div>
+        </header>
+
+        <div class="tool-card p-6 mb-8">
+            <div id="upload-section" class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-center">Upload Your PDF File</h2>
+                <div id="drop-zone" class="drop-zone p-8 text-center cursor-pointer">
+                    <input type="file" id="pdf-file" accept=".pdf" class="hidden" />
+                    <i class="fas fa-file-pdf text-5xl text-blue-500 mb-3"></i>
+                    <p class="text-lg mb-2">Drag & Drop your PDF file here</p>
+                    <p class="text-sm text-gray-500 mb-4">or</p>
+                    <button id="browse-files" class="btn-primary text-white px-6 py-2 rounded-lg">Browse Files</button>
+                </div>
+                <p id="file-name" class="mt-4 text-center hidden"></p>
+                <div id="status-message" class="my-4 p-4 rounded hidden"></div>
+            </div>
+
+            <div id="action-section" class="hidden">
+                <div class="flex justify-center mb-6 border-b">
+                    <button id="tab-lock" class="tab active px-6 py-3 text-lg">Lock PDF</button>
+                    <button id="tab-unlock" class="tab px-6 py-3 text-lg">Unlock PDF</button>
+                </div>
+
+                <div id="lock-form" class="mb-6">
+                    <div class="mb-4">
+                        <label for="lock-password" class="block text-sm font-medium text-gray-700 mb-2">Set Password</label>
+                        <input type="password" id="lock-password" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter password to protect your PDF">
+                    </div>
+                    <div class="mb-6">
+                        <label for="lock-confirm-password" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                        <input type="password" id="lock-confirm-password" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Confirm your password">
+                    </div>
+                    <div class="text-center">
+                        <button id="lock-button" class="btn-primary text-white px-8 py-3 rounded-lg">
+                            <i class="fas fa-lock mr-2"></i> Lock PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div id="unlock-form" class="mb-6 hidden">
+                    <div class="mb-6">
+                        <label for="unlock-password" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                        <input type="password" id="unlock-password" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter the current PDF password">
+                    </div>
+                    <div class="text-center">
+                        <button id="unlock-button" class="btn-primary text-white px-8 py-3 rounded-lg">
+                            <i class="fas fa-unlock mr-2"></i> Unlock PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="result-section" class="hidden text-center">
+                <div class="success-message p-4 rounded mb-6">
+                    <p class="text-lg font-medium" id="result-message"></p>
+                </div>
+                <button id="download-button" class="btn-primary text-white px-8 py-3 rounded-lg">
+                    <i class="fas fa-download mr-2"></i> Download PDF
+                </button>
+                <button id="process-another" class="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg ml-3">
+                    Process Another PDF
+                </button>
+            </div>
+        </div>
+
+        <footer class="text-center text-gray-600 mt-12 pb-8">
+            <p>Follow us on Instagram <a href="https://www.instagram.com/naeem_bhai_078" class="text-blue-600 hover:underline" target="_blank">@naeem_bhai_078</a></p>
+            <p class="mt-2">All rights reserved by Tools Ocean</p>
+            <p class="mt-1 text-sm">Developed by MD Naeem Akhtar</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('pdf-file');
+            const browseButton = document.getElementById('browse-files');
+            const fileName = document.getElementById('file-name');
+            const uploadSection = document.getElementById('upload-section');
+            const actionSection = document.getElementById('action-section');
+            const resultSection = document.getElementById('result-section');
+            const lockForm = document.getElementById('lock-form');
+            const unlockForm = document.getElementById('unlock-form');
+            const tabLock = document.getElementById('tab-lock');
+            const tabUnlock = document.getElementById('tab-unlock');
+            const statusMessage = document.getElementById('status-message');
+            const lockButton = document.getElementById('lock-button');
+            const unlockButton = document.getElementById('unlock-button');
+            const downloadButton = document.getElementById('download-button');
+            const processAnother = document.getElementById('process-another');
+            const resultMessage = document.getElementById('result-message');
+
+            // Variables to store data
+            let uploadedFile = null;
+            let processedPdfBytes = null;
+
+            // Handle file selection
+            browseButton.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (event) => {
+                handleFile(event.target.files[0]);
+            });
+
+            // Drag and drop functionality
+            dropZone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                dropZone.classList.add('active');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('active');
+            });
+
+            dropZone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                dropZone.classList.remove('active');
+                
+                if (event.dataTransfer.files.length) {
+                    const file = event.dataTransfer.files[0];
+                    if (file.type === 'application/pdf') {
+                        handleFile(file);
+                    } else {
+                        showMessage('Please upload a valid PDF file.', 'error');
+                    }
+                }
+            });
+
+            // Tab switching
+            tabLock.addEventListener('click', () => {
+                tabLock.classList.add('active');
+                tabUnlock.classList.remove('active');
+                lockForm.classList.remove('hidden');
+                unlockForm.classList.add('hidden');
+            });
+
+            tabUnlock.addEventListener('click', () => {
+                tabUnlock.classList.add('active');
+                tabLock.classList.remove('active');
+                unlockForm.classList.remove('hidden');
+                lockForm.classList.add('hidden');
+            });
+
+            // Lock button click handler
+            lockButton.addEventListener('click', async () => {
+                const password = document.getElementById('lock-password').value;
+                const confirmPassword = document.getElementById('lock-confirm-password').value;
+
+                if (!password) {
+                    showMessage('Please enter a password.', 'error');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    showMessage('Passwords do not match.', 'error');
+                    return;
+                }
+
+                showMessage('Processing your PDF...', 'info');
+                await lockPDF(uploadedFile, password);
+            });
+
+            // Unlock button click handler
+            unlockButton.addEventListener('click', async () => {
+                const password = document.getElementById('unlock-password').value;
+
+                if (!password) {
+                    showMessage('Please enter the current password.', 'error');
+                    return;
+                }
+
+                showMessage('Processing your PDF...', 'info');
+                await unlockPDF(uploadedFile, password);
+            });
+
+            // Download button click handler
+            downloadButton.addEventListener('click', () => {
+                if (processedPdfBytes) {
+                    const blob = new Blob([processedPdfBytes], { type: 'application/pdf' });
+                    const originalFileName = uploadedFile.name;
+                    const newFileName = originalFileName.replace('.pdf', '') + (tabLock.classList.contains('active') ? '-locked.pdf' : '-unlocked.pdf');
+                    
+                    // Using download.js for broader browser compatibility
+                    download(blob, newFileName, 'application/pdf');
+                }
+            });
+
+            // Process another PDF
+            processAnother.addEventListener('click', () => {
+                resetUI();
+            });
+
+            // Function to handle the uploaded file
+            function handleFile(file) {
+                if (!file) return;
+
+                if (file.type !== 'application/pdf') {
+                    showMessage('Please upload a valid PDF file.', 'error');
+                    return;
+                }
+
+                uploadedFile = file;
+                fileName.textContent = `Selected file: ${file.name}`;
+                fileName.classList.remove('hidden');
+                uploadSection.classList.remove('hidden');
+                actionSection.classList.remove('hidden');
+                resultSection.classList.add('hidden');
+                statusMessage.classList.add('hidden');
+            }
+
+            // Lock PDF function
+            async function lockPDF(file, password) {
+                try {
+                    const arrayBuffer = await readFileAsArrayBuffer(file);
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                    
+                    // Set the password
+                    const protectedPdfBytes = await pdfDoc.save({
+                        userPassword: password,
+                        ownerPassword: password
+                    });
+                    
+                    processedPdfBytes = protectedPdfBytes;
+                    showResultSection('Your PDF has been successfully password protected.');
+                } catch (error) {
+                    console.error('Error locking PDF:', error);
+                    showMessage('Failed to lock PDF. ' + error.message, 'error');
+                }
+            }
+
+            // Unlock PDF function
+            async function unlockPDF(file, password) {
+                try {
+                    const arrayBuffer = await readFileAsArrayBuffer(file);
+                    
+                    // Load the protected PDF with the provided password
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer, {
+                        password: password
+                    });
+                    
+                    // Save without password protection
+                    const unprotectedPdfBytes = await pdfDoc.save();
+                    
+                    processedPdfBytes = unprotectedPdfBytes;
+                    showResultSection('Your PDF has been successfully unlocked.');
+                } catch (error) {
+                    console.error('Error unlocking PDF:', error);
+                    if (error.message.includes('password')) {
+                        showMessage('Incorrect password. Please try again.', 'error');
+                    } else {
+                        showMessage('Failed to unlock PDF. ' + error.message, 'error');
+                    }
+                }
+            }
+
+            // Helper function to read file as ArrayBuffer
+            function readFileAsArrayBuffer(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            // UI Helper Functions
+            function showMessage(text, type) {
+                statusMessage.textContent = text;
+                statusMessage.classList.remove('hidden', 'success-message', 'error-message');
+                
+                if (type === 'error') {
+                    statusMessage.classList.add('error-message');
+                } else if (type === 'success') {
+                    statusMessage.classList.add('success-message');
+                }
+                
+                statusMessage.classList.remove('hidden');
+            }
+
+            function showResultSection(message) {
+                uploadSection.classList.add('hidden');
+                actionSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+                resultMessage.textContent = message;
+            }
+
+            function resetUI() {
+                uploadedFile = null;
+                processedPdfBytes = null;
+                fileInput.value = '';
+                fileName.textContent = '';
+                fileName.classList.add('hidden');
+                document.getElementById('lock-password').value = '';
+                document.getElementById('lock-confirm-password').value = '';
+                document.getElementById('unlock-password').value = '';
+                
+                uploadSection.classList.remove('hidden');
+                actionSection.classList.add('hidden');
+                resultSection.classList.add('hidden');
+                statusMessage.classList.add('hidden');
+                
+                tabLock.classList.add('active');
+                tabUnlock.classList.remove('active');
+                lockForm.classList.remove('hidden');
+                unlockForm.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
