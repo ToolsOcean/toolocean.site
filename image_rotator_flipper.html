@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Rotator & Flipper Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --secondary-color: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+        }
+        .custom-blue-bg {
+            background-color: var(--primary-color);
+        }
+        .custom-blue-text {
+            color: var(--primary-color);
+        }
+        .image-container {
+            min-height: 300px;
+            background-color: #e0e0e0;
+            border: 2px dashed #aaaaaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 500px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .tool-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tool-btn:hover {
+            background-color: #0055cc;
+        }
+        .credit-section {
+            background-color: #e6f0ff;
+            border-top: 3px solid var(--primary-color);
+        }
+        .footer-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 0 10px;
+            transition: transform 0.3s ease;
+        }
+        .footer-icon:hover {
+            transform: scale(1.2);
+        }
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            z-index: 10;
+        }
+        .made-in-badge {
+            background-color: #ff6b00;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .made-in-badge i {
+            margin-right: 5px;
+        }
+        @media (max-width: 640px) {
+            .tool-controls {
+                flex-direction: column;
+            }
+            .tool-btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="custom-blue-bg text-white p-4 shadow-lg">
+            <div class="container mx-auto flex flex-wrap justify-between items-center">
+                <h1 class="text-2xl md:text-3xl font-bold">Image Rotator & Flipper Tool</h1>
+                <div class="hidden md:block">
+                    <div class="made-in-badge">
+                        <i class="fas fa-flag"></i> Made in India
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto p-4">
+            <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+                <!-- Tool Description -->
+                <div class="mb-6 text-gray-700">
+                    <p class="text-lg">Upload an image and use the controls below to rotate or flip it. Once you're done, you can download the edited image.</p>
+                </div>
+
+                <!-- Image Upload and Display Area -->
+                <div class="image-container rounded-lg mb-6" id="imageContainer">
+                    <div class="upload-overlay" id="uploadOverlay">
+                        <i class="fas fa-cloud-upload-alt text-5xl custom-blue-text mb-4"></i>
+                        <p class="text-lg text-center mb-4">Drag & drop an image here or click to upload</p>
+                        <label for="imageUpload" class="tool-btn cursor-pointer">
+                            <i class="fas fa-upload mr-2"></i> Upload Image
+                        </label>
+                    </div>
+                    <img id="previewImage" style="display: none;" alt="Preview">
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                </div>
+
+                <!-- Tool Controls -->
+                <div class="tool-controls flex flex-wrap justify-center gap-2 mb-6">
+                    <button id="rotateLeftBtn" class="tool-btn flex items-center" disabled>
+                        <i class="fas fa-undo mr-2"></i> Rotate Left
+                    </button>
+                    <button id="rotateRightBtn" class="tool-btn flex items-center" disabled>
+                        <i class="fas fa-redo mr-2"></i> Rotate Right
+                    </button>
+                    <button id="flipHorizontalBtn" class="tool-btn flex items-center" disabled>
+                        <i class="fas fa-exchange-alt mr-2"></i> Flip Horizontally
+                    </button>
+                    <button id="flipVerticalBtn" class="tool-btn flex items-center" disabled>
+                        <i class="fas fa-exchange-alt fa-rotate-90 mr-2"></i> Flip Vertically
+                    </button>
+                    <button id="resetBtn" class="tool-btn flex items-center" disabled>
+                        <i class="fas fa-sync-alt mr-2"></i> Reset
+                    </button>
+                    <button id="downloadBtn" class="tool-btn flex items-center bg-green-600 hover:bg-green-700" disabled>
+                        <i class="fas fa-download mr-2"></i> Download
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Credits Section -->
+        <footer class="credit-section mt-8 py-6">
+            <div class="container mx-auto px-4">
+                <div class="md:flex justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <h3 class="text-xl font-bold custom-blue-text mb-2">Credits</h3>
+                        <p class="text-gray-700">Created by: MD Naeem Akhtar</p>
+                        <div class="mt-2">
+                            <div class="made-in-badge">
+                                <i class="fas fa-flag"></i> Made in India
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h3 class="text-xl font-bold custom-blue-text mb-2">Follow Us</h3>
+                        <div class="flex flex-wrap items-center">
+                            <a href="https://www.instagram.com/naeem_bhai_078" target="_blank" class="flex items-center mr-4 mb-2 text-gray-700 hover:text-blue-600">
+                                <i class="fab fa-instagram footer-icon"></i>
+                                <span>@naeem_bhai_078</span>
+                            </a>
+                            <a href="https://www.instagram.com/toolsocean.site" target="_blank" class="flex items-center mr-4 mb-2 text-gray-700 hover:text-blue-600">
+                                <i class="fab fa-instagram footer-icon"></i>
+                                <span>@toolsocean.site</span>
+                            </a>
+                            <a href="https://youtube.com/@toolsocean?si=2pgBZCT9679iIlpS" target="_blank" class="flex items-center mb-2 text-gray-700 hover:text-blue-600">
+                                <i class="fab fa-youtube footer-icon"></i>
+                                <span>YouTube</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageContainer = document.getElementById('imageContainer');
+            const uploadOverlay = document.getElementById('uploadOverlay');
+            const imageUpload = document.getElementById('imageUpload');
+            const previewImage = document.getElementById('previewImage');
+            const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+            const rotateRightBtn = document.getElementById('rotateRightBtn');
+            const flipHorizontalBtn = document.getElementById('flipHorizontalBtn');
+            const flipVerticalBtn = document.getElementById('flipVerticalBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            let rotation = 0;
+            let flipH = 1;
+            let flipV = 1;
+            let originalImage = null;
+
+            // Handle file upload
+            imageContainer.addEventListener('click', function() {
+                imageUpload.click();
+            });
+
+            // Handle drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                imageContainer.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            imageContainer.addEventListener('dragenter', () => {
+                imageContainer.classList.add('border-blue-500');
+            });
+
+            imageContainer.addEventListener('dragleave', () => {
+                imageContainer.classList.remove('border-blue-500');
+            });
+
+            imageContainer.addEventListener('drop', handleDrop);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length) {
+                    handleFiles(files);
+                }
+                imageContainer.classList.remove('border-blue-500');
+            }
+
+            imageUpload.addEventListener('change', function() {
+                if (this.files.length) {
+                    handleFiles(this.files);
+                }
+            });
+
+            function handleFiles(files) {
+                const file = files[0];
+                if (!file.type.match('image.*')) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Store original image for reset
+                    originalImage = e.target.result;
+                    
+                    // Display image
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    uploadOverlay.style.display = 'none';
+                    
+                    // Enable buttons
+                    rotateLeftBtn.disabled = false;
+                    rotateRightBtn.disabled = false;
+                    flipHorizontalBtn.disabled = false;
+                    flipVerticalBtn.disabled = false;
+                    resetBtn.disabled = false;
+                    downloadBtn.disabled = false;
+                    
+                    // Reset transformations
+                    resetTransformations();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Image manipulation functions
+            rotateLeftBtn.addEventListener('click', function() {
+                rotation = (rotation - 90) % 360;
+                applyTransformations();
+            });
+
+            rotateRightBtn.addEventListener('click', function() {
+                rotation = (rotation + 90) % 360;
+                applyTransformations();
+            });
+
+            flipHorizontalBtn.addEventListener('click', function() {
+                flipH *= -1;
+                applyTransformations();
+            });
+
+            flipVerticalBtn.addEventListener('click', function() {
+                flipV *= -1;
+                applyTransformations();
+            });
+
+            resetBtn.addEventListener('click', function() {
+                resetTransformations();
+                applyTransformations();
+            });
+
+            function resetTransformations() {
+                rotation = 0;
+                flipH = 1;
+                flipV = 1;
+            }
+
+            function applyTransformations() {
+                previewImage.style.transform = `rotate(${rotation}deg) scale(${flipH}, ${flipV})`;
+            }
+
+            // Download functionality
+            downloadBtn.addEventListener('click', function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Create a temporary image to get dimensions
+                const tempImg = new Image();
+                tempImg.onload = function() {
+                    // Set canvas size based on rotation
+                    let width = tempImg.width;
+                    let height = tempImg.height;
+                    
+                    if (rotation === 90 || rotation === 270) {
+                        // Swap dimensions for 90 or 270 degree rotations
+                        canvas.width = height;
+                        canvas.height = width;
+                    } else {
+                        canvas.width = width;
+                        canvas.height = height;
+                    }
+                    
+                    // Apply transformations
+                    ctx.save();
+                    
+                    // Move to center of canvas
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    
+                    // Apply rotation
+                    ctx.rotate(rotation * Math.PI / 180);
+                    
+                    // Apply flips
+                    ctx.scale(flipH, flipV);
+                    
+                    // Draw image
+                    if (rotation === 90 || rotation === 270) {
+                        ctx.drawImage(tempImg, -height / 2, -width / 2, height, width);
+                    } else {
+                        ctx.drawImage(tempImg, -width / 2, -height / 2, width, height);
+                    }
+                    
+                    ctx.restore();
+                    
+                    // Download the image
+                    const link = document.createElement('a');
+                    link.download = 'edited-image.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                };
+                
+                tempImg.src = originalImage;
+            });
+        });
+    </script>
+</body>
+</html>
