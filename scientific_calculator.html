@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0077cc;
+            --secondary-blue: #0066b3;
+            --dark-blue: #004d99;
+            --light-blue: #e6f3ff;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .calculator {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: white;
+        }
+        .display {
+            background-color: var(--light-blue);
+            border-bottom: 2px solid var(--primary-blue);
+        }
+        .calc-btn {
+            transition: all 0.15s ease;
+            user-select: none;
+            cursor: pointer;
+        }
+        .number {
+            background-color: white;
+        }
+        .number:hover {
+            background-color: #f0f0f0;
+        }
+        .operation {
+            background-color: var(--light-blue);
+        }
+        .operation:hover {
+            background-color: #d9eaff;
+        }
+        .function {
+            background-color: #e9ecef;
+        }
+        .function:hover {
+            background-color: #dee2e6;
+        }
+        .equal {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        .equal:hover {
+            background-color: var(--secondary-blue);
+        }
+        .clear, .delete {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        .clear:hover, .delete:hover {
+            background-color: #ff5252;
+        }
+        .calc-btn:active {
+            transform: scale(0.97);
+        }
+        .history-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 8px 0;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+        }
+        .mode-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        .mode-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .mode-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .mode-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .mode-slider {
+            background-color: var(--primary-blue);
+        }
+        input:checked + .mode-slider:before {
+            -webkit-transform: translateX(30px);
+            -ms-transform: translateX(30px);
+            transform: translateX(30px);
+        }
+        .mode-labels {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            width: 100%;
+            top: 5px;
+            color: white;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .mode-scientific {
+            padding-left: 6px;
+        }
+        .mode-basic {
+            padding-right: 6px;
+        }
+        @media (max-width: 640px) {
+            .calculator-container {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            .calc-btn {
+                font-size: 0.85rem;
+                height: 40px;
+            }
+        }
+        .footer {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        #instagram-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+        #instagram-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="header text-white py-4">
+        <div class="container mx-auto px-4">
+            <h1 class="text-2xl font-bold text-center">Scientific Calculator</h1>
+            <p class="text-center text-sm opacity-80">Tools Ocean</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-6 flex flex-col items-center">
+        <div class="calculator-container w-full max-w-md">
+            <div class="calculator bg-white rounded-lg overflow-hidden">
+                <div class="display p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <label class="mode-switch">
+                                <input type="checkbox" id="calculator-mode" checked>
+                                <span class="mode-slider"></span>
+                                <div class="mode-labels">
+                                    <span class="mode-scientific">Scientific</span>
+                                    <span class="mode-basic">Basic</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div>
+                            <button id="history-toggle" class="p-2 text-blue-600 focus:outline-none">
+                                <i class="fas fa-history"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="expression-display h-8 text-gray-600 text-right overflow-x-auto whitespace-nowrap" id="expression-display"></div>
+                    <div class="result-display text-3xl font-bold text-right overflow-x-auto whitespace-nowrap" id="result-display">0</div>
+                </div>
+
+                <div class="calculator-body">
+                    <div class="scientific-section grid grid-cols-5 gap-1 p-2" id="scientific-section">
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="sin">sin</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="cos">cos</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="tan">tan</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="asin">sin⁻¹</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="acos">cos⁻¹</div>
+                        
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="atan">tan⁻¹</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="log">log</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="ln">ln</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="e">e</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="pi">π</div>
+                        
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="sqrt">√</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="square">x²</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="cube">x³</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="pow">x^y</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="factorial">x!</div>
+                        
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="(">(</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value=")">)</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="ms">MS</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="mr">MR</div>
+                        <div class="calc-btn function col-span-1 h-12 flex items-center justify-center rounded" data-value="mc">MC</div>
+                    </div>
+
+                    <div class="basic-section grid grid-cols-4 gap-1 p-2">
+                        <div class="calc-btn clear col-span-2 h-12 flex items-center justify-center rounded" data-value="clear">AC</div>
+                        <div class="calc-btn delete h-12 flex items-center justify-center rounded" data-value="delete">⌫</div>
+                        <div class="calc-btn operation h-12 flex items-center justify-center rounded" data-value="/">÷</div>
+                        
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="7">7</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="8">8</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="9">9</div>
+                        <div class="calc-btn operation h-12 flex items-center justify-center rounded" data-value="*">×</div>
+                        
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="4">4</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="5">5</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="6">6</div>
+                        <div class="calc-btn operation h-12 flex items-center justify-center rounded" data-value="-">−</div>
+                        
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="1">1</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="2">2</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="3">3</div>
+                        <div class="calc-btn operation h-12 flex items-center justify-center rounded" data-value="+">+</div>
+                        
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="+/-">±</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value="0">0</div>
+                        <div class="calc-btn number h-12 flex items-center justify-center rounded" data-value=".">.</div>
+                        <div class="calc-btn equal h-12 flex items-center justify-center rounded" data-value="=">=</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-panel mt-4 bg-white rounded-lg p-4 hidden" id="history-panel">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Calculation History</h3>
+                <div class="history-list max-h-60 overflow-y-auto" id="history-list">
+                    <!-- History items will be added here dynamically -->
+                </div>
+                <button id="clear-history" class="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">Clear History</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-100 py-4 mt-8">
+        <div class="container mx-auto px-4 text-center footer">
+            <p>Credit: MD Naeem Akhtar - Follow us on Instagram: <a href="https://instagram.com/naeem_bhai_078" id="instagram-link" target="_blank">@naeem_bhai_078</a></p>
+            <p>All right reserved by Tools Ocean</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const expressionDisplay = document.getElementById('expression-display');
+            const resultDisplay = document.getElementById('result-display');
+            const calculatorMode = document.getElementById('calculator-mode');
+            const scientificSection = document.getElementById('scientific-section');
+            const historyToggle = document.getElementById('history-toggle');
+            const historyPanel = document.getElementById('history-panel');
+            const historyList = document.getElementById('history-list');
+            const clearHistoryBtn = document.getElementById('clear-history');
+
+            let currentExpression = '';
+            let lastResult = '0';
+            let memory = 0;
+            let history = JSON.parse(localStorage.getItem('calculatorHistory')) || [];
+
+            // Display history from localStorage
+            renderHistory();
+
+            // Initialize calculator state
+            updateScientificSection();
+
+            // Event listener for calculator buttons
+            document.querySelectorAll('.calc-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    handleButtonClick(value);
+                });
+            });
+
+            // Mode switch event listener
+            calculatorMode.addEventListener('change', updateScientificSection);
+
+            // History toggle event listener
+            historyToggle.addEventListener('click', function() {
+                historyPanel.classList.toggle('hidden');
+            });
+
+            // Clear history event listener
+            clearHistoryBtn.addEventListener('click', function() {
+                history = [];
+                localStorage.removeItem('calculatorHistory');
+                renderHistory();
+            });
+
+            // Handle keyboard input
+            document.addEventListener('keydown', function(event) {
+                const key = event.key;
+                if (/[0-9\+\-\*\/\.\(\)]/.test(key)) {
+                    handleButtonClick(key);
+                } else if (key === 'Enter') {
+                    handleButtonClick('=');
+                } else if (key === 'Backspace') {
+                    handleButtonClick('delete');
+                } else if (key === 'Escape') {
+                    handleButtonClick('clear');
+                }
+            });
+
+            function updateScientificSection() {
+                if (calculatorMode.checked) {
+                    scientificSection.classList.remove('hidden');
+                } else {
+                    scientificSection.classList.add('hidden');
+                }
+            }
+
+            function handleButtonClick(value) {
+                try {
+                    switch (value) {
+                        case 'clear':
+                            currentExpression = '';
+                            lastResult = '0';
+                            break;
+                        case 'delete':
+                            currentExpression = currentExpression.slice(0, -1);
+                            break;
+                        case '=':
+                            calculate();
+                            break;
+                        case 'sin':
+                            insertFunction('Math.sin(');
+                            break;
+                        case 'cos':
+                            insertFunction('Math.cos(');
+                            break;
+                        case 'tan':
+                            insertFunction('Math.tan(');
+                            break;
+                        case 'asin':
+                            insertFunction('Math.asin(');
+                            break;
+                        case 'acos':
+                            insertFunction('Math.acos(');
+                            break;
+                        case 'atan':
+                            insertFunction('Math.atan(');
+                            break;
+                        case 'log':
+                            insertFunction('Math.log10(');
+                            break;
+                        case 'ln':
+                            insertFunction('Math.log(');
+                            break;
+                        case 'sqrt':
+                            insertFunction('Math.sqrt(');
+                            break;
+                        case 'square':
+                            currentExpression += '**2';
+                            break;
+                        case 'cube':
+                            currentExpression += '**3';
+                            break;
+                        case 'pow':
+                            currentExpression += '**';
+                            break;
+                        case 'pi':
+                            currentExpression += 'Math.PI';
+                            break;
+                        case 'e':
+                            currentExpression += 'Math.E';
+                            break;
+                        case 'factorial':
+                            calculateFactorial();
+                            break;
+                        case 'ms':
+                            memory = evaluateExpression(currentExpression) || 0;
+                            break;
+                        case 'mr':
+                            currentExpression += memory;
+                            break;
+                        case 'mc':
+                            memory = 0;
+                            break;
+                        case '+/-':
+                            toggleSign();
+                            break;
+                        default:
+                            currentExpression += value;
+                    }
+                    
+                    updateDisplay();
+                } catch (error) {
+                    resultDisplay.textContent = 'Error';
+                }
+            }
+
+            function insertFunction(funcName) {
+                // If there's a selection or result already displayed, apply function to it
+                if (lastResult !== '0' && currentExpression === '') {
+                    currentExpression = funcName + lastResult + ')';
+                } else {
+                    currentExpression += funcName;
+                }
+            }
+
+            function calculateFactorial() {
+                try {
+                    // Extract the number before factorial
+                    let num = parseFloat(lastResult);
+                    if (isNaN(num)) return;
+                    
+                    if (num < 0 || !Number.isInteger(num)) {
+                        resultDisplay.textContent = 'Invalid for factorial';
+                        return;
+                    }
+                    
+                    let result = 1;
+                    for (let i = 2; i <= num; i++) {
+                        result *= i;
+                    }
+                    
+                    lastResult = result.toString();
+                    currentExpression = '';
+                    addToHistory(`${num}! = ${result}`);
+                    updateDisplay();
+                } catch (error) {
+                    resultDisplay.textContent = 'Error';
+                }
+            }
+
+            function toggleSign() {
+                if (currentExpression === '') {
+                    if (lastResult !== '0') {
+                        currentExpression = (-parseFloat(lastResult)).toString();
+                    }
+                } else {
+                    // Check if the last character is a number
+                    const lastNumMatch = currentExpression.match(/(\d+(\.\d+)?)$/);
+                    if (lastNumMatch) {
+                        const lastNum = lastNumMatch[0];
+                        const lastNumPos = currentExpression.lastIndexOf(lastNum);
+                        const newNum = (-parseFloat(lastNum)).toString();
+                        currentExpression = currentExpression.substring(0, lastNumPos) + newNum;
+                    } else {
+                        currentExpression = '(-' + currentExpression + ')';
+                    }
+                }
+            }
+
+            function updateDisplay() {
+                let displayExpression = currentExpression;
+                
+                // Replace Math functions with their symbols for display
+                displayExpression = displayExpression.replace(/Math\.sin/g, 'sin');
+                displayExpression = displayExpression.replace(/Math\.cos/g, 'cos');
+                displayExpression = displayExpression.replace(/Math\.tan/g, 'tan');
+                displayExpression = displayExpression.replace(/Math\.asin/g, 'sin⁻¹');
+                displayExpression = displayExpression.replace(/Math\.acos/g, 'cos⁻¹');
+                displayExpression = displayExpression.replace(/Math\.atan/g, 'tan⁻¹');
+                displayExpression = displayExpression.replace(/Math\.log10/g, 'log');
+                displayExpression = displayExpression.replace(/Math\.log/g, 'ln');
+                displayExpression = displayExpression.replace(/Math\.sqrt/g, '√');
+                displayExpression = displayExpression.replace(/Math\.PI/g, 'π');
+                displayExpression = displayExpression.replace(/Math\.E/g, 'e');
+                displayExpression = displayExpression.replace(/\*\*/g, '^');
+                displayExpression = displayExpression.replace(/\*/g, '×');
+                displayExpression = displayExpression.replace(/\//g, '÷');
+                
+                expressionDisplay.textContent = displayExpression;
+                
+                if (currentExpression === '') {
+                    resultDisplay.textContent = lastResult;
+                } else {
+                    try {
+                        const result = evaluateExpression(currentExpression);
+                        if (result !== undefined) {
+                            resultDisplay.textContent = result;
+                        }
+                    } catch (e) {
+                        // Don't update result on parse error
+                    }
+                }
+            }
+
+            function calculate() {
+                if (currentExpression === '') return;
+                
+                try {
+                    const result = evaluateExpression(currentExpression);
+                    if (result !== undefined) {
+                        const expressionForHistory = expressionDisplay.textContent;
+                        addToHistory(`${expressionForHistory} = ${result}`);
+                        lastResult = result.toString();
+                        currentExpression = '';
+                        updateDisplay();
+                    }
+                } catch (error) {
+                    resultDisplay.textContent = 'Error';
+                }
+            }
+
+            function evaluateExpression(expression) {
+                if (!expression) return undefined;
+                
+                try {
+                    // Convert degrees to radians for trigonometric functions
+                    expression = expression.replace(/Math\.(sin|cos|tan)\(([^)]+)\)/g, (match, func, arg) => {
+                        return `Math.${func}(${arg} * Math.PI / 180)`;
+                    });
+                    
+                    const result = Function('"use strict"; return (' + expression + ')')();
+                    
+                    if (isNaN(result) || !isFinite(result)) {
+                        return 'Error';
+                    }
+                    
+                    // Format the result
+                    if (Number.isInteger(result)) {
+                        return result.toString();
+                    } else {
+                        return parseFloat(result.toFixed(8)).toString();
+                    }
+                } catch (e) {
+                    return undefined;
+                }
+            }
+
+            function addToHistory(entry) {
+                history.unshift(entry);
+                if (history.length > 10) {
+                    history.pop();
+                }
+                localStorage.setItem('calculatorHistory', JSON.stringify(history));
+                renderHistory();
+            }
+
+            function renderHistory() {
+                historyList.innerHTML = '';
+                if (history.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.textContent = 'No history yet';
+                    emptyMsg.className = 'text-gray-500 text-center py-2';
+                    historyList.appendChild(emptyMsg);
+                } else {
+                    history.forEach(item => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.textContent = item;
+                        historyItem.addEventListener('click', function() {
+                            const [expr, res] = item.split(' = ');
+                            lastResult = res;
+                            resultDisplay.textContent = res;
+                            expressionDisplay.textContent = '';
+                            currentExpression = '';
+                        });
+                        historyList.appendChild(historyItem);
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
