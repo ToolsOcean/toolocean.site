@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Shortener Tool - Tools Ocean</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0077FF;
+            --primary-hover: #0066CC;
+            --background-color: #f0f8ff;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+        }
+        .container {
+            max-width: 1000px;
+        }
+        .custom-blue {
+            background-color: var(--primary-color);
+        }
+        .custom-blue:hover {
+            background-color: var(--primary-hover);
+        }
+        .custom-border {
+            border-color: var(--primary-color);
+        }
+        .textarea-container {
+            position: relative;
+        }
+        .word-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #666;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 140px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -75px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        @media (max-width: 640px) {
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .button-group button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Text Shortener Tool</h1>
+            <p class="text-gray-600">Automatically shorten long text while preserving the core meaning</p>
+        </header>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="mb-6">
+                <label for="inputText" class="block text-gray-700 font-semibold mb-2">Input Your Text:</label>
+                <div class="textarea-container">
+                    <textarea id="inputText" rows="8" class="w-full px-3 py-2 text-gray-700 border custom-border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Paste or type your long text here..."></textarea>
+                    <div class="word-count" id="inputCount">0 words</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-between items-center mb-6 button-group">
+                <div class="flex space-x-2 mb-2 sm:mb-0">
+                    <button id="shortenBtn" class="custom-blue text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-cut mr-2"></i>Shorten Text
+                    </button>
+                    <button id="clearBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
+                        <i class="fas fa-trash-alt mr-2"></i>Clear
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <label for="compressionLevel" class="mr-2 text-sm font-medium text-gray-700">Compression Level:</label>
+                    <select id="compressionLevel" class="border custom-border rounded px-2 py-1 text-sm">
+                        <option value="high">High (25%)</option>
+                        <option value="medium" selected>Medium (50%)</option>
+                        <option value="low">Low (75%)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-2">
+                <label for="outputText" class="block text-gray-700 font-semibold mb-2">Shortened Result:</label>
+                <div class="textarea-container">
+                    <textarea id="outputText" rows="6" class="w-full px-3 py-2 text-gray-700 border custom-border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Shortened text will appear here..." readonly></textarea>
+                    <div class="word-count" id="outputCount">0 words</div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button id="copyBtn" class="custom-blue text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hover:bg-blue-600 transition-colors tooltip">
+                    <i class="fas fa-copy mr-2"></i>Copy
+                    <span class="tooltiptext" id="copyTooltip">Copy to clipboard</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">How It Works</h2>
+            <div class="space-y-3 text-gray-600">
+                <p><i class="fas fa-arrow-right text-blue-500 mr-2"></i> The tool analyzes your text and identifies the most important sentences.</p>
+                <p><i class="fas fa-arrow-right text-blue-500 mr-2"></i> It removes redundant information while preserving the core meaning.</p>
+                <p><i class="fas fa-arrow-right text-blue-500 mr-2"></i> You can adjust the compression level for different degrees of shortening.</p>
+                <p><i class="fas fa-arrow-right text-blue-500 mr-2"></i> Perfect for creating summaries, social media posts, or previews.</p>
+            </div>
+        </div>
+        
+        <footer class="text-center text-gray-600 text-sm">
+            <p>Created by MD Naeem Akhtar</p>
+            <p class="mt-1">Follow us: <a href="https://www.instagram.com/naeem_bhai_078" class="text-blue-500 hover:underline" target="_blank">@naeem_bhai_078</a></p>
+            <p class="mt-2">All rights reserved by Tools Ocean</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('inputText');
+            const outputText = document.getElementById('outputText');
+            const shortenBtn = document.getElementById('shortenBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const compressionLevel = document.getElementById('compressionLevel');
+            const inputCount = document.getElementById('inputCount');
+            const outputCount = document.getElementById('outputCount');
+            const copyTooltip = document.getElementById('copyTooltip');
+
+            // Update word count for input
+            inputText.addEventListener('input', function() {
+                const words = inputText.value.trim() === '' ? 0 : inputText.value.match(/\S+/g).length;
+                inputCount.textContent = `${words} words`;
+            });
+
+            // Shorten text function
+            shortenBtn.addEventListener('click', function() {
+                if (inputText.value.trim() === '') {
+                    alert('Please enter some text to shorten.');
+                    return;
+                }
+                const shortenedText = shortenText(inputText.value, compressionLevel.value);
+                outputText.value = shortenedText;
+                
+                // Update output word count
+                const words = outputText.value.trim() === '' ? 0 : outputText.value.match(/\S+/g).length;
+                outputCount.textContent = `${words} words`;
+            });
+
+            // Clear function
+            clearBtn.addEventListener('click', function() {
+                inputText.value = '';
+                outputText.value = '';
+                inputCount.textContent = '0 words';
+                outputCount.textContent = '0 words';
+            });
+
+            // Copy function
+            copyBtn.addEventListener('click', function() {
+                if (outputText.value.trim() === '') {
+                    alert('There is no shortened text to copy.');
+                    return;
+                }
+                outputText.select();
+                document.execCommand('copy');
+                
+                // Show copied tooltip
+                copyTooltip.textContent = 'Copied!';
+                setTimeout(function() {
+                    copyTooltip.textContent = 'Copy to clipboard';
+                }, 2000);
+            });
+
+            // Text shortening algorithm
+            function shortenText(text, compressionLevel) {
+                // Split text into sentences
+                const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [];
+                
+                if (sentences.length <= 1) {
+                    return text;
+                }
+                
+                // Calculate compression ratio based on selected level
+                let compressionRatio;
+                switch(compressionLevel) {
+                    case 'high':
+                        compressionRatio = 0.25; // Keep 25% of sentences
+                        break;
+                    case 'medium':
+                        compressionRatio = 0.5; // Keep 50% of sentences
+                        break;
+                    case 'low':
+                        compressionRatio = 0.75; // Keep 75% of sentences
+                        break;
+                    default:
+                        compressionRatio = 0.5;
+                }
+                
+                // Extract common words (excluding stop words)
+                const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with', 
+                    'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'of', 'is', 'are']);
+                
+                const wordFrequency = {};
+                
+                sentences.forEach(sentence => {
+                    const words = sentence.toLowerCase().match(/\w+/g) || [];
+                    words.forEach(word => {
+                        if (!stopWords.has(word)) {
+                            wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+                        }
+                    });
+                });
+                
+                // Score sentences based on word frequency and position
+                const sentenceScores = sentences.map((sentence, index) => {
+                    const words = sentence.toLowerCase().match(/\w+/g) || [];
+                    let score = 0;
+                    
+                    words.forEach(word => {
+                        if (wordFrequency[word]) {
+                            score += wordFrequency[word];
+                        }
+                    });
+                    
+                    // Give higher score to sentences at the beginning and end
+                    if (index < sentences.length * 0.2 || index > sentences.length * 0.8) {
+                        score *= 1.25;
+                    }
+                    
+                    return { sentence, score, index };
+                });
+                
+                // Sort sentences by score
+                sentenceScores.sort((a, b) => b.score - a.score);
+                
+                // Determine how many sentences to keep
+                const keepCount = Math.max(1, Math.floor(sentences.length * compressionRatio));
+                
+                // Get top scored sentences
+                const topSentences = sentenceScores.slice(0, keepCount);
+                
+                // Sort back to original order
+                topSentences.sort((a, b) => a.index - b.index);
+                
+                // Join selected sentences
+                return topSentences.map(item => item.sentence).join(' ');
+            }
+        });
+    </script>
+</body>
+</html>
