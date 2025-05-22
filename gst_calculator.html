@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Calculator - Tools Ocean</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #ffffff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+        }
+        
+        .calculator-container {
+            background: linear-gradient(145deg, #f0f8ff, #e6f5ff);
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.2);
+        }
+        
+        .calculator-header {
+            background-color: var(--primary-color);
+        }
+        
+        .input-group {
+            transition: all 0.3s ease;
+        }
+        
+        .input-group:focus-within {
+            transform: translateY(-2px);
+        }
+        
+        input[type="number"], select {
+            transition: border 0.3s ease;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        
+        .result-box {
+            background: linear-gradient(145deg, #ffffff, #f5f9ff);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .result-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 123, 255, 0.15);
+        }
+        
+        .btn-calculate {
+            background-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn-reset {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-reset:hover {
+            transform: translateY(-2px);
+        }
+        
+        .radio-container input[type="radio"] {
+            display: none;
+        }
+        
+        .radio-container label {
+            cursor: pointer;
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .radio-container input[type="radio"]:checked + label {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Animation for result changes */
+        @keyframes highlight {
+            0% { background-color: rgba(0, 123, 255, 0.2); }
+            100% { background-color: transparent; }
+        }
+        
+        .highlight {
+            animation: highlight 1s ease;
+        }
+        
+        .error {
+            border-color: #ff3860 !important;
+        }
+        
+        .error-message {
+            color: #ff3860;
+            font-size: 0.85rem;
+            height: 20px;
+        }
+
+        /* Footer styling */
+        .footer {
+            background-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 flex-grow">
+        <div class="calculator-container max-w-lg mx-auto rounded-lg overflow-hidden p-6 mb-8">
+            <div class="calculator-header text-white text-center py-4 rounded-t-lg -mx-6 -mt-6 mb-6">
+                <h1 class="text-3xl font-bold">GST Calculator</h1>
+                <p class="mt-2">Calculate GST amount and total price</p>
+            </div>
+            
+            <!-- Calculator Form -->
+            <form id="gstForm" class="space-y-6">
+                <!-- Calculation Type -->
+                <div class="input-group">
+                    <label class="block text-gray-700 font-medium mb-3">Calculation Type</label>
+                    <div class="radio-container flex flex-wrap gap-2">
+                        <div>
+                            <input type="radio" id="exclusive" name="calculationType" value="exclusive" checked>
+                            <label for="exclusive" class="text-sm md:text-base">GST Exclusive (Add GST)</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="inclusive" name="calculationType" value="inclusive">
+                            <label for="inclusive" class="text-sm md:text-base">GST Inclusive (Extract GST)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Amount Input -->
+                <div class="input-group">
+                    <label for="amount" class="block text-gray-700 font-medium mb-2">Amount (₹)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₹</span>
+                        <input type="number" id="amount" name="amount" min="0" step="0.01" 
+                            class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+                            placeholder="Enter amount" required>
+                    </div>
+                    <div class="error-message mt-1" id="amountError"></div>
+                </div>
+                
+                <!-- GST Rate -->
+                <div class="input-group">
+                    <label for="gstRate" class="block text-gray-700 font-medium mb-2">GST Rate</label>
+                    <select id="gstRate" name="gstRate" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none">
+                        <option value="5">5%</option>
+                        <option value="12">12%</option>
+                        <option value="18" selected>18%</option>
+                        <option value="28">28%</option>
+                        <option value="custom">Custom Rate</option>
+                    </select>
+                    
+                    <div id="customRateContainer" class="hidden mt-3">
+                        <label for="customRate" class="block text-gray-700 font-medium mb-2">Custom GST Rate (%)</label>
+                        <input type="number" id="customRate" name="customRate" min="0" max="100" step="0.01" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none" value="0">
+                        <div class="error-message mt-1" id="customRateError"></div>
+                    </div>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" id="calculateBtn" class="btn-calculate flex-1 text-white font-bold py-3 px-4 rounded-md focus:outline-none">
+                        Calculate
+                    </button>
+                    <button type="reset" id="resetBtn" class="btn-reset flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-md focus:outline-none">
+                        Reset
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Results Section -->
+            <div class="mt-8 space-y-4">
+                <h2 class="text-xl font-bold text-gray-700 border-b pb-2">Results</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Original Amount -->
+                    <div class="result-box p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500">Original Amount</h3>
+                        <p id="originalAmount" class="text-xl font-bold text-gray-800 mt-1">₹0.00</p>
+                    </div>
+                    
+                    <!-- GST Amount -->
+                    <div class="result-box p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500">GST Amount</h3>
+                        <p id="gstAmount" class="text-xl font-bold text-gray-800 mt-1">₹0.00</p>
+                    </div>
+                    
+                    <!-- Total Amount -->
+                    <div class="result-box p-4 rounded-lg col-span-1 md:col-span-2 bg-blue-50">
+                        <h3 class="text-sm font-medium text-gray-600">Total Amount (with GST)</h3>
+                        <p id="totalAmount" class="text-2xl font-bold text-blue-700 mt-1">₹0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to use section -->
+            <div class="mt-8">
+                <h2 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">How to use</h2>
+                <ol class="list-decimal pl-5 space-y-2 text-gray-700">
+                    <li>Select calculation type - Add GST (exclusive) or Extract GST (inclusive)</li>
+                    <li>Enter the amount</li>
+                    <li>Select GST rate (5%, 12%, 18%, or 28%)</li>
+                    <li>Click "Calculate" to see results</li>
+                </ol>
+            </div>
+
+            <!-- GST Explanation -->
+            <div class="mt-8">
+                <h2 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Understanding GST</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Goods and Services Tax (GST) is a value-added tax levied on most goods and services sold for domestic consumption. 
+                    GST is collected by businesses at each stage of the supply chain and paid to the government. There are different GST rates 
+                    depending on the category of goods and services.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-2">Created by MD Naeem Akhtar</p>
+            <div class="flex justify-center items-center space-x-3">
+                <a href="https://www.instagram.com/naeem_bhai_078" target="_blank" class="text-white hover:text-blue-200">
+                    <i class="fab fa-instagram"></i> @naeem_bhai_078
+                </a>
+                <span>|</span>
+                <p>Tools Ocean</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements
+            const form = document.getElementById('gstForm');
+            const amountInput = document.getElementById('amount');
+            const gstRateSelect = document.getElementById('gstRate');
+            const customRateContainer = document.getElementById('customRateContainer');
+            const customRateInput = document.getElementById('customRate');
+            const calculationTypeExclusive = document.getElementById('exclusive');
+            const calculationTypeInclusive = document.getElementById('inclusive');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const originalAmountDisplay = document.getElementById('originalAmount');
+            const gstAmountDisplay = document.getElementById('gstAmount');
+            const totalAmountDisplay = document.getElementById('totalAmount');
+            const amountError = document.getElementById('amountError');
+            const customRateError = document.getElementById('customRateError');
+
+            // Handle GST rate change
+            gstRateSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customRateContainer.classList.remove('hidden');
+                } else {
+                    customRateContainer.classList.add('hidden');
+                }
+                performCalculation();
+            });
+
+            // Handle calculation type change
+            document.querySelectorAll('input[name="calculationType"]').forEach(radio => {
+                radio.addEventListener('change', performCalculation);
+            });
+
+            // Handle input change for amount
+            amountInput.addEventListener('input', function() {
+                validateAmount();
+                performCalculation();
+            });
+
+            // Handle input change for custom rate
+            customRateInput.addEventListener('input', function() {
+                validateCustomRate();
+                performCalculation();
+            });
+
+            // Handle calculate button click
+            calculateBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    performCalculation();
+                    highlightResults();
+                }
+            });
+
+            // Handle reset button click
+            resetBtn.addEventListener('click', function() {
+                resetResults();
+                amountError.textContent = '';
+                customRateError.textContent = '';
+                amountInput.classList.remove('error');
+                customRateInput.classList.remove('error');
+                customRateContainer.classList.add('hidden');
+                gstRateSelect.value = '18';
+                calculationTypeExclusive.checked = true;
+            });
+
+            // Validate amount
+            function validateAmount() {
+                const amount = parseFloat(amountInput.value);
+                if (isNaN(amount) || amount < 0) {
+                    amountInput.classList.add('error');
+                    amountError.textContent = 'Please enter a valid positive number';
+                    return false;
+                } else {
+                    amountInput.classList.remove('error');
+                    amountError.textContent = '';
+                    return true;
+                }
+            }
+
+            // Validate custom rate
+            function validateCustomRate() {
+                if (gstRateSelect.value === 'custom') {
+                    const rate = parseFloat(customRateInput.value);
+                    if (isNaN(rate) || rate < 0 || rate > 100) {
+                        customRateInput.classList.add('error');
+                        customRateError.textContent = 'Rate must be between 0 and 100';
+                        return false;
+                    } else {
+                        customRateInput.classList.remove('error');
+                        customRateError.textContent = '';
+                        return true;
+                    }
+                }
+                return true;
+            }
+
+            // Validate form
+            function validateForm() {
+                const isAmountValid = validateAmount();
+                const isCustomRateValid = validateCustomRate();
+                return isAmountValid && isCustomRateValid;
+            }
+
+            // Perform calculation
+            function performCalculation() {
+                if (!validateForm()) return;
+
+                const amount = parseFloat(amountInput.value) || 0;
+                let rate = parseFloat(gstRateSelect.value);
+                
+                if (gstRateSelect.value === 'custom') {
+                    rate = parseFloat(customRateInput.value) || 0;
+                }
+                
+                const isExclusive = calculationTypeExclusive.checked;
+                let originalAmount, gstAmount, totalAmount;
+
+                if (isExclusive) {
+                    // GST Exclusive calculation (Add GST)
+                    originalAmount = amount;
+                    gstAmount = (originalAmount * rate) / 100;
+                    totalAmount = originalAmount + gstAmount;
+                } else {
+                    // GST Inclusive calculation (Extract GST)
+                    totalAmount = amount;
+                    gstAmount = (totalAmount * rate) / (100 + rate);
+                    originalAmount = totalAmount - gstAmount;
+                }
+
+                // Format and display results
+                originalAmountDisplay.textContent = '₹' + originalAmount.toFixed(2);
+                gstAmountDisplay.textContent = '₹' + gstAmount.toFixed(2);
+                totalAmountDisplay.textContent = '₹' + totalAmount.toFixed(2);
+            }
+
+            // Reset results
+            function resetResults() {
+                originalAmountDisplay.textContent = '₹0.00';
+                gstAmountDisplay.textContent = '₹0.00';
+                totalAmountDisplay.textContent = '₹0.00';
+            }
+
+            // Highlight results with animation
+            function highlightResults() {
+                const results = [originalAmountDisplay, gstAmountDisplay, totalAmountDisplay];
+                results.forEach(el => {
+                    el.classList.remove('highlight');
+                    void el.offsetWidth; // Trigger reflow
+                    el.classList.add('highlight');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
