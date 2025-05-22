@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Duplicate Lines - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0078ff;
+            --secondary-color: #e6f3ff;
+            --text-color: #333333;
+            --white-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-bg {
+            background-color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0066dd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 120, 255, 0.25);
+        }
+
+        .stats-container {
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-item {
+            display: inline-block;
+            margin-right: 15px;
+            font-size: 14px;
+        }
+
+        .stats-count {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        footer {
+            margin-top: auto;
+            background-color: var(--primary-color);
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 120, 255, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .tool-container {
+            background-color: var(--white-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .tool-header {
+            background-color: var(--secondary-color);
+            padding: 15px;
+            border-bottom: 1px solid #e3e8f0;
+        }
+
+        .tool-body {
+            padding: 20px;
+        }
+
+        .btn-icon {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .stats-item {
+                display: block;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-bg text-white py-4 shadow-md">
+        <div class="container">
+            <h1 class="text-3xl font-bold text-center">Remove Duplicate Lines</h1>
+            <p class="text-center mt-2">Easily remove duplicate lines from your text, keeping only the first occurrence</p>
+        </div>
+    </header>
+
+    <main class="container my-6 px-4">
+        <div class="tool-container">
+            <div class="tool-header">
+                <h2 class="text-xl font-semibold">Remove Duplicate Lines Tool</h2>
+                <p class="text-sm text-gray-600 mt-1">Paste your text below and click "Remove Duplicates" to remove all duplicate lines</p>
+            </div>
+            
+            <div class="tool-body">
+                <div class="stats-container mb-4">
+                    <div class="stats-item">
+                        <span>Total Lines: </span>
+                        <span id="totalLines" class="stats-count">0</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Duplicate Lines: </span>
+                        <span id="duplicateLines" class="stats-count">0</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Unique Lines: </span>
+                        <span id="uniqueLines" class="stats-count">0</span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="inputText" class="block text-sm font-medium mb-2">Input Text:</label>
+                    <textarea id="inputText" class="w-full p-3" placeholder="Paste your text here..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <button id="removeDuplicatesBtn" class="btn btn-primary text-white py-2 px-4 rounded-md flex items-center justify-center">
+                        <i class="fas fa-filter btn-icon"></i>Remove Duplicates
+                    </button>
+                    <button id="clearInputBtn" class="btn btn-secondary text-white py-2 px-4 rounded-md flex items-center justify-center">
+                        <i class="fas fa-eraser btn-icon"></i>Clear Input
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="outputText" class="block text-sm font-medium mb-2">Output Text:</label>
+                    <textarea id="outputText" class="w-full p-3" placeholder="Output will appear here..." readonly></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button id="copyOutputBtn" class="btn btn-primary text-white py-2 px-4 rounded-md flex items-center justify-center">
+                        <i class="fas fa-copy btn-icon"></i>Copy Output
+                    </button>
+                    <button id="clearOutputBtn" class="btn btn-secondary text-white py-2 px-4 rounded-md flex items-center justify-center">
+                        <i class="fas fa-eraser btn-icon"></i>Clear Output
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="copyNotification" class="copy-notification">
+        Copied to clipboard!
+    </div>
+
+    <footer class="text-white py-4">
+        <div class="container text-center">
+            <div class="mb-2">
+                <p>Created by MD Naeem Akhtar</p>
+                <p>Follow us: <a href="https://www.instagram.com/naeem_bhai_078" class="text-white hover:underline" target="_blank">@naeem_bhai_078</a></p>
+            </div>
+            <div class="text-sm">
+                <p>All rights reserved by Tools Ocean</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('inputText');
+            const outputText = document.getElementById('outputText');
+            const removeDuplicatesBtn = document.getElementById('removeDuplicatesBtn');
+            const clearInputBtn = document.getElementById('clearInputBtn');
+            const copyOutputBtn = document.getElementById('copyOutputBtn');
+            const clearOutputBtn = document.getElementById('clearOutputBtn');
+            const copyNotification = document.getElementById('copyNotification');
+            const totalLinesSpan = document.getElementById('totalLines');
+            const duplicateLinesSpan = document.getElementById('duplicateLines');
+            const uniqueLinesSpan = document.getElementById('uniqueLines');
+            
+            // Update statistics
+            function updateStats() {
+                const input = inputText.value;
+                const output = outputText.value;
+                
+                if (input.trim() === '') {
+                    totalLinesSpan.textContent = '0';
+                    duplicateLinesSpan.textContent = '0';
+                    uniqueLinesSpan.textContent = '0';
+                    return;
+                }
+                
+                const inputLines = input.split('\n');
+                const totalLines = inputLines.length;
+                
+                let uniqueLines = 0;
+                if (output.trim() !== '') {
+                    uniqueLines = output.split('\n').length;
+                }
+                
+                const duplicateLines = totalLines - uniqueLines;
+                
+                totalLinesSpan.textContent = totalLines;
+                duplicateLinesSpan.textContent = duplicateLines;
+                uniqueLinesSpan.textContent = uniqueLines;
+            }
+            
+            // Remove duplicate lines
+            function removeDuplicates() {
+                const text = inputText.value;
+                if (text.trim() === '') return;
+                
+                const lines = text.split('\n');
+                const uniqueLines = [];
+                const seenLines = new Set();
+                
+                for (const line of lines) {
+                    if (!seenLines.has(line)) {
+                        seenLines.add(line);
+                        uniqueLines.push(line);
+                    }
+                }
+                
+                outputText.value = uniqueLines.join('\n');
+                updateStats();
+            }
+            
+            // Copy output to clipboard
+            function copyOutput() {
+                if (outputText.value.trim() === '') return;
+                
+                outputText.select();
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                
+                copyNotification.style.display = 'block';
+                setTimeout(() => {
+                    copyNotification.style.display = 'none';
+                }, 2000);
+            }
+            
+            // Event listeners
+            removeDuplicatesBtn.addEventListener('click', removeDuplicates);
+            
+            clearInputBtn.addEventListener('click', function() {
+                inputText.value = '';
+                updateStats();
+            });
+            
+            clearOutputBtn.addEventListener('click', function() {
+                outputText.value = '';
+                updateStats();
+            });
+            
+            copyOutputBtn.addEventListener('click', copyOutput);
+            
+            inputText.addEventListener('input', updateStats);
+            
+            // Initial stats update
+            updateStats();
+        });
+    </script>
+</body>
+</html>
