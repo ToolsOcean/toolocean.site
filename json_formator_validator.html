@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter and Validator - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --background-color: #f8f9fa;
+            --text-color: #202124;
+            --error-color: #d93025;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+        }
+        
+        .tool-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .json-error {
+            color: var(--error-color);
+            font-weight: 500;
+        }
+        
+        .json-key {
+            color: #0d47a1;
+        }
+        
+        .json-value {
+            color: #2e7d32;
+        }
+        
+        .json-string {
+            color: #c2185b;
+        }
+        
+        .json-number {
+            color: #f57c00;
+        }
+        
+        .json-boolean {
+            color: #7b1fa2;
+        }
+        
+        .json-null {
+            color: #607d8b;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .credit-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+        }
+        
+        .success-message {
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body class="py-6 px-4">
+    <div class="tool-container p-4 md:p-6">
+        <!-- Header Section -->
+        <div class="header-gradient text-white p-6 rounded-t-lg text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold">JSON Formatter & Validator</h1>
+            <p class="text-lg opacity-90 mt-2">Format, validate, and beautify your JSON data</p>
+        </div>
+        
+        <!-- Main Tool Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2 class="text-xl font-semibold mb-3 text-gray-800">Input JSON</h2>
+                <textarea id="jsonInput" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="Paste your JSON data here..."></textarea>
+                
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <button id="formatBtn" class="btn-primary px-5 py-2 rounded-lg flex items-center gap-2">
+                        <i class="fas fa-magic"></i> Format
+                    </button>
+                    <button id="validateBtn" class="btn-primary px-5 py-2 rounded-lg flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> Validate
+                    </button>
+                    <button id="clearBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Output Section -->
+            <div class="output-section">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-semibold text-gray-800">Output</h2>
+                    <button id="copyBtn" class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                
+                <div id="jsonOutput" class="w-full h-full min-h-[200px] p-4 bg-gray-50 border border-gray-300 rounded-lg overflow-auto">
+                    <div class="text-gray-500 italic">Formatted JSON will appear here</div>
+                </div>
+                
+                <div id="validationResult" class="mt-3 p-0 min-h-[28px]"></div>
+            </div>
+        </div>
+        
+        <!-- How to Use Section -->
+        <div class="mt-10 bg-blue-50 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">How to Use</h2>
+            <ol class="list-decimal pl-5 space-y-3 text-gray-700">
+                <li>Paste your raw JSON data in the input field</li>
+                <li>Click <strong>Format</strong> to beautify your JSON with proper indentation</li>
+                <li>Click <strong>Validate</strong> to check if your JSON syntax is valid</li>
+                <li>Use <strong>Clear</strong> to reset both input and output fields</li>
+                <li>Click <strong>Copy</strong> to copy the formatted JSON to clipboard</li>
+            </ol>
+        </div>
+        
+        <!-- Credits Section -->
+        <div class="mt-10 border-t pt-6 text-center">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Credits</h3>
+            <div class="flex flex-col items-center">
+                <img src="https://i.imgur.com/LX5KCBj.jpg" alt="Developer" class="credit-img mb-3">
+                <p class="font-medium text-gray-800">MD Naeem Akhtar</p>
+                <div class="mt-2 flex items-center justify-center gap-2">
+                    <span class="text-gray-700">Follow us:</span>
+                    <a href="https://instagram.com/naeem_bhai_078" target="_blank" class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                        <i class="fab fa-instagram"></i> @naeem_bhai_078
+                    </a>
+                </div>
+                <p class="mt-4 text-sm text-gray-600">All rights reserved by Tools Ocean</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const jsonInput = document.getElementById('jsonInput');
+            const jsonOutput = document.getElementById('jsonOutput');
+            const validationResult = document.getElementById('validationResult');
+            const formatBtn = document.getElementById('formatBtn');
+            const validateBtn = document.getElementById('validateBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // Format JSON
+            function formatJSON() {
+                const input = jsonInput.value.trim();
+                if (!input) {
+                    showError("Please enter JSON data to format");
+                    return;
+                }
+                
+                try {
+                    const parsed = JSON.parse(input);
+                    const formatted = JSON.stringify(parsed, null, 4);
+                    displayFormattedJSON(formatted);
+                    showSuccess("JSON formatted successfully!");
+                } catch (error) {
+                    showError(`Invalid JSON: ${error.message}`);
+                }
+            }
+            
+            // Validate JSON
+            function validateJSON() {
+                const input = jsonInput.value.trim();
+                if (!input) {
+                    showError("Please enter JSON data to validate");
+                    return;
+                }
+                
+                try {
+                    JSON.parse(input);
+                    showSuccess("JSON is valid!");
+                } catch (error) {
+                    showError(`Invalid JSON: ${error.message}`);
+                }
+            }
+            
+            // Display formatted JSON with syntax highlighting
+            function displayFormattedJSON(json) {
+                // Basic syntax highlighting
+                let highlighted = json
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                        let cls = 'json-number';
+                        if (/^"/.test(match)) {
+                            if (/:$/.test(match)) {
+                                cls = 'json-key';
+                            } else {
+                                cls = 'json-string';
+                            }
+                        } else if (/true|false/.test(match)) {
+                            cls = 'json-boolean';
+                        } else if (/null/.test(match)) {
+                            cls = 'json-null';
+                        }
+                        return '<span class="' + cls + '">' + match + '</span>';
+                    });
+                
+                jsonOutput.innerHTML = `<pre>${highlighted}</pre>`;
+            }
+            
+            // Show error message
+            function showError(message) {
+                validationResult.innerHTML = `<div class="json-error"><i class="fas fa-exclamation-circle mr-2"></i>${message}</div>`;
+            }
+            
+            // Show success message
+            function showSuccess(message) {
+                validationResult.innerHTML = `<div class="success-message"><i class="fas fa-check-circle mr-2"></i>${message}</div>`;
+            }
+            
+            // Clear all fields
+            function clearFields() {
+                jsonInput.value = '';
+                jsonOutput.innerHTML = '<div class="text-gray-500 italic">Formatted JSON will appear here</div>';
+                validationResult.innerHTML = '';
+            }
+            
+            // Copy to clipboard
+            function copyToClipboard() {
+                const formatted = jsonOutput.textContent;
+                
+                if (formatted && formatted !== 'Formatted JSON will appear here') {
+                    navigator.clipboard.writeText(formatted).then(() => {
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
+                }
+            }
+            
+            // Event listeners
+            formatBtn.addEventListener('click', formatJSON);
+            validateBtn.addEventListener('click', validateJSON);
+            clearBtn.addEventListener('click', clearFields);
+            copyBtn.addEventListener('click', copyToClipboard);
+        });
+    </script>
+</body>
+</html>
