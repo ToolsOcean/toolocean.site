@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Text Encryptor/Decryptor - Tools Ocean</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f8ff;
+            color: #1e3799;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-header h1 {
+            color: #1e3799;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #1e3799;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 150px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #1e3799;
+            border-radius: 5px;
+            background: white;
+            color: #1e3799;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .encrypt-btn {
+            background: #1e3799;
+            color: white;
+        }
+
+        .decrypt-btn {
+            background: #4a69bd;
+            color: white;
+        }
+
+        .secondary-btn {
+            background: #7ed6df;
+            color: #1e3799;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .credit-section {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .credit-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 1rem auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button, select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tool-header">
+            <h1>Secure Text Converter</h1>
+            <p>Encrypt/Decrypt text using various methods</p>
+        </div>
+
+        <div class="input-group">
+            <textarea id="input-text" placeholder="Enter your text here..."></textarea>
+            <select id="method">
+                <option value="caesar">Caesar Cipher (Shift 3)</option>
+                <option value="base64">Base64 Encoding</option>
+                <option value="custom">Custom Key Encryption</option>
+            </select>
+            <input type="text" id="custom-key" placeholder="Enter encryption key" style="display: none; width: 100%; margin-top: 10px;">
+        </div>
+
+        <div class="controls">
+            <button class="encrypt-btn" onclick="encrypt()">Encrypt</button>
+            <button class="decrypt-btn" onclick="decrypt()">Decrypt</button>
+            <button class="secondary-btn" onclick="clearText()">Clear</button>
+            <button class="secondary-btn" onclick="copyOutput()">Copy Output</button>
+        </div>
+
+        <div class="input-group">
+            <textarea id="output-text" readonly placeholder="Result will appear here..."></textarea>
+        </div>
+
+        <div class="credit-section">
+            <img src="https://via.placeholder.com/100" alt="MD Naeem Akhtar" class="credit-photo">
+            <h3>MD Naeem Akhtar</h3>
+            <p>Follow us on <a href="https://instagram.com/naeem_bhai_078" target="_blank">@naeem_bhai_078</a></p>
+            <p>All rights reserved by Tools Ocean</p>
+        </div>
+    </div>
+
+    <script>
+        // Method selector handler
+        document.getElementById('method').addEventListener('change', function() {
+            document.getElementById('custom-key').style.display = 
+                this.value === 'custom' ? 'block' : 'none';
+        });
+
+        // Encryption/Decryption methods
+        const methods = {
+            caesar: {
+                encrypt: (text) => text.split('').map(c => {
+                    const code = c.charCodeAt(0);
+                    return String.fromCharCode(code + 3);
+                }).join(''),
+                decrypt: (text) => text.split('').map(c => {
+                    const code = c.charCodeAt(0);
+                    return String.fromCharCode(code - 3);
+                }).join('')
+            },
+
+            base64: {
+                encrypt: (text) => btoa(text),
+                decrypt: (text) => atob(text)
+            },
+
+            custom: {
+                encrypt: (text, key) => {
+                    return text.split('').map((c, i) => {
+                        const keyChar = key.charCodeAt(i % key.length);
+                        return String.fromCharCode(c.charCodeAt(0) ^ keyChar);
+                    }).join('');
+                },
+                decrypt: (text, key) => methods.custom.encrypt(text, key)
+            }
+        };
+
+        function encrypt() {
+            const method = document.getElementById('method').value;
+            const text = document.getElementById('input-text').value;
+            const key = document.getElementById('custom-key').value;
+            
+            let result;
+            if (method === 'custom') {
+                result = methods[method].encrypt(text, key);
+            } else {
+                result = methods[method].encrypt(text);
+            }
+            
+            document.getElementById('output-text').value = result;
+        }
+
+        function decrypt() {
+            const method = document.getElementById('method').value;
+            const text = document.getElementById('input-text').value;
+            const key = document.getElementById('custom-key').value;
+            
+            let result;
+            if (method === 'custom') {
+                result = methods[method].decrypt(text, key);
+            } else {
+                result = methods[method].decrypt(text);
+            }
+            
+            document.getElementById('output-text').value = result;
+        }
+
+        function clearText() {
+            document.getElementById('input-text').value = '';
+            document.getElementById('output-text').value = '';
+        }
+
+        async function copyOutput() {
+            const output = document.getElementById('output-text');
+            try {
+                await navigator.clipboard.writeText(output.value);
+                alert('Copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy!');
+            }
+        }
+    </script>
+</body>
+</html>
