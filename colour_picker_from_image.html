@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Color Picker - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0096ff;
+            --dark-blue: #0078cc;
+            --light-blue: #e6f5ff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+        }
+        
+        .color-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .canvas-container {
+            position: relative;
+            overflow: auto;
+            max-height: 400px;
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+        }
+        
+        #imageCanvas {
+            cursor: crosshair;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+        
+        .color-value {
+            position: relative;
+        }
+        
+        .copy-icon {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+        
+        .copy-icon:hover {
+            opacity: 1;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .header-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        
+        .header-wave svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 46px;
+        }
+        
+        .header-wave .shape-fill {
+            fill: #FFFFFF;
+        }
+        
+        @media (max-width: 640px) {
+            .color-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white py-12 mb-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">Image Color Picker</h1>
+            <p class="text-center text-blue-100">Extract color values from any image with a simple click</p>
+        </div>
+        <div class="header-wave">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 pb-16">
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                <div class="w-full md:w-auto">
+                    <label for="imageUpload" class="btn-primary px-6 py-3 rounded-lg font-medium cursor-pointer inline-block">
+                        <i class="fas fa-upload mr-2"></i> Choose Image
+                    </label>
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                </div>
+                <div class="w-full md:w-auto">
+                    <button id="resetButton" class="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg font-medium transition">
+                        <i class="fas fa-sync-alt mr-2"></i> Reset
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-3 text-center text-gray-600 text-sm">
+                <p>Upload an image and click on any pixel to extract its color</p>
+            </div>
+        </div>
+
+        <!-- Image Preview Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <i class="fas fa-image text-blue-500 mr-2"></i>Image Preview
+            </h2>
+            
+            <div class="flex justify-center">
+                <div id="canvasContainer" class="canvas-container hidden">
+                    <canvas id="imageCanvas"></canvas>
+                    <div id="colorTooltip" class="tooltip"></div>
+                </div>
+                <div id="noImageMessage" class="py-16 text-center w-full border-2 border-dashed border-gray-300 rounded-lg">
+                    <div class="text-gray-400">
+                        <i class="fas fa-file-image text-4xl mb-3"></i>
+                        <p>No image selected</p>
+                        <p class="text-sm mt-2">Upload an image to start picking colors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Display Section -->
+        <div id="colorSection" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <i class="fas fa-palette text-blue-500 mr-2"></i>Extracted Color
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Color Preview Box -->
+                <div class="flex items-center justify-center">
+                    <div>
+                        <p class="text-center mb-2 text-gray-600">Color Preview</p>
+                        <div id="colorPreview" class="color-box mx-auto"></div>
+                    </div>
+                </div>
+                
+                <!-- Color Values -->
+                <div class="space-y-3">
+                    <div class="color-value">
+                        <label class="block text-gray-700 mb-1">HEX</label>
+                        <div class="flex items-center bg-gray-100 rounded-md overflow-hidden">
+                            <input type="text" id="hexValue" class="bg-transparent px-3 py-2 flex-grow outline-none" readonly>
+                            <button class="copy-icon p-2 bg-gray-200" data-target="hexValue">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="color-value">
+                        <label class="block text-gray-700 mb-1">RGB</label>
+                        <div class="flex items-center bg-gray-100 rounded-md overflow-hidden">
+                            <input type="text" id="rgbValue" class="bg-transparent px-3 py-2 flex-grow outline-none" readonly>
+                            <button class="copy-icon p-2 bg-gray-200" data-target="rgbValue">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="color-value">
+                        <label class="block text-gray-700 mb-1">HSL</label>
+                        <div class="flex items-center bg-gray-100 rounded-md overflow-hidden">
+                            <input type="text" id="hslValue" class="bg-transparent px-3 py-2 flex-grow outline-none" readonly>
+                            <button class="copy-icon p-2 bg-gray-200" data-target="hslValue">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="mb-4 md:mb-0 flex items-center">
+                    <div class="w-12 h-12 rounded-full overflow-hidden mr-3">
+                        <img src="https://page1.genspark.site/v1/base64_upload/ff62613fc936f7e7939c33e1bc984c5f" alt="Creator" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <p class="text-sm">Developed by</p>
+                        <p class="font-semibold">Tools Ocean</p>
+                    </div>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-sm text-gray-400">Created by: MD Naeem Akhtar</p>
+                    <div class="mt-2">
+                        <a href="https://www.instagram.com/naeem_bhai_078" target="_blank" class="inline-block text-blue-400 hover:text-blue-300 transition">
+                            <i class="fab fa-instagram mr-1"></i>@naeem_bhai_078
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div id="notification" class="notification shadow-lg">
+        <span id="notificationText">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageUpload = document.getElementById('imageUpload');
+            const imageCanvas = document.getElementById('imageCanvas');
+            const ctx = imageCanvas.getContext('2d');
+            const canvasContainer = document.getElementById('canvasContainer');
+            const noImageMessage = document.getElementById('noImageMessage');
+            const colorSection = document.getElementById('colorSection');
+            const colorPreview = document.getElementById('colorPreview');
+            const hexValue = document.getElementById('hexValue');
+            const rgbValue = document.getElementById('rgbValue');
+            const hslValue = document.getElementById('hslValue');
+            const resetButton = document.getElementById('resetButton');
+            const colorTooltip = document.getElementById('colorTooltip');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            let image = null;
+            
+            // Upload image handler
+            imageUpload.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        image = new Image();
+                        image.onload = function() {
+                            // Set canvas dimensions
+                            const maxWidth = Math.min(800, window.innerWidth - 40);
+                            const scale = image.width > maxWidth ? maxWidth / image.width : 1;
+                            
+                            imageCanvas.width = image.width * scale;
+                            imageCanvas.height = image.height * scale;
+                            
+                            // Draw image on canvas
+                            ctx.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
+                            
+                            // Show canvas container and color section
+                            canvasContainer.classList.remove('hidden');
+                            noImageMessage.classList.add('hidden');
+                        };
+                        
+                        image.src = event.target.result;
+                    };
+                    
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+            
+            // Canvas click handler to pick colors
+            imageCanvas.addEventListener('click', function(e) {
+                const rect = imageCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Get pixel data
+                const pixelData = ctx.getImageData(x, y, 1, 1).data;
+                const [r, g, b] = [pixelData[0], pixelData[1], pixelData[2]];
+                
+                // Calculate color values
+                const hex = rgbToHex(r, g, b);
+                const rgb = `rgb(${r}, ${g}, ${b})`;
+                const hsl = rgbToHsl(r, g, b);
+                
+                // Update color preview and values
+                colorPreview.style.backgroundColor = hex;
+                hexValue.value = hex;
+                rgbValue.value = rgb;
+                hslValue.value = hsl;
+                
+                // Show color section if hidden
+                colorSection.classList.remove('hidden');
+            });
+            
+            // Mousemove handler for tooltip
+            imageCanvas.addEventListener('mousemove', function(e) {
+                const rect = imageCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x >= 0 && x < imageCanvas.width && y >= 0 && y < imageCanvas.height) {
+                    // Get pixel data
+                    const pixelData = ctx.getImageData(x, y, 1, 1).data;
+                    const [r, g, b] = [pixelData[0], pixelData[1], pixelData[2]];
+                    const hex = rgbToHex(r, g, b);
+                    
+                    // Update and position tooltip
+                    colorTooltip.textContent = hex;
+                    colorTooltip.style.left = (e.clientX + 10) + 'px';
+                    colorTooltip.style.top = (e.clientY + 10) + 'px';
+                    colorTooltip.style.display = 'block';
+                    colorTooltip.style.backgroundColor = hex;
+                    
+                    // Set text color for better contrast
+                    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                    colorTooltip.style.color = brightness > 128 ? 'black' : 'white';
+                }
+            });
+            
+            // Hide tooltip when mouse leaves canvas
+            imageCanvas.addEventListener('mouseleave', function() {
+                colorTooltip.style.display = 'none';
+            });
+            
+            // Reset button handler
+            resetButton.addEventListener('click', function() {
+                imageUpload.value = '';
+                canvasContainer.classList.add('hidden');
+                noImageMessage.classList.remove('hidden');
+                colorSection.classList.add('hidden');
+                ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+                image = null;
+            });
+            
+            // Copy buttons handler
+            document.querySelectorAll('.copy-icon').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const inputElement = document.getElementById(targetId);
+                    
+                    // Copy text to clipboard
+                    inputElement.select();
+                    document.execCommand('copy');
+                    
+                    // Deselect text
+                    window.getSelection().removeAllRanges();
+                    
+                    // Show notification
+                    notificationText.textContent = `Copied ${targetId.replace('Value', '')}: ${inputElement.value}`;
+                    notification.style.display = 'block';
+                    
+                    // Hide notification after 2 seconds
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 2000);
+                });
+            });
+            
+            // Helper functions
+            function componentToHex(c) {
+                const hex = c.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }
+            
+            function rgbToHex(r, g, b) {
+                return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+            }
+            
+            function rgbToHsl(r, g, b) {
+                r /= 255;
+                g /= 255;
+                b /= 255;
+                
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                
+                if (max === min) {
+                    h = s = 0; // achromatic
+                } else {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    
+                    switch (max) {
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    
+                    h /= 6;
+                }
+                
+                return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+            }
+        });
+    </script>
+</body>
+</html>
