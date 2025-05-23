@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex Tester - Tools Ocean</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0077ff;
+            --light-blue: #e6f3ff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9fafb;
+        }
+        .header-blue {
+            background-color: var(--primary-blue);
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0066dd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 119, 255, 0.2);
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        .results-area {
+            background-color: var(--light-blue);
+            border-left: 4px solid var(--primary-blue);
+        }
+        .footer-link {
+            color: var(--primary-blue);
+            transition: color 0.3s ease;
+        }
+        .footer-link:hover {
+            color: #0066dd;
+            text-decoration: underline;
+        }
+        .highlight {
+            background-color: #ffff00;
+            padding: 2px 0;
+        }
+        .match-item {
+            background-color: rgba(0, 119, 255, 0.1);
+            border-left: 3px solid var(--primary-blue);
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 0 5px 5px 0;
+        }
+        .profile-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-blue);
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-blue text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold mb-2 text-center">Regex Tester</h1>
+            <p class="text-center text-white text-opacity-90">Test your regular expressions in real-time</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="card p-6 mb-8">
+            <div class="mb-6">
+                <label for="regex" class="block mb-2 font-medium text-gray-700">Regular Expression</label>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="regex" class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter regex pattern (e.g. \w+)">
+                    <div class="flex-shrink-0">
+                        <label for="flagsGlobal" class="inline-flex items-center mr-2">
+                            <input type="checkbox" id="flagsGlobal" class="mr-1" checked>
+                            <span>g</span>
+                        </label>
+                        <label for="flagsCase" class="inline-flex items-center mr-2">
+                            <input type="checkbox" id="flagsCase" class="mr-1">
+                            <span>i</span>
+                        </label>
+                        <label for="flagsMultiline" class="inline-flex items-center">
+                            <input type="checkbox" id="flagsMultiline" class="mr-1">
+                            <span>m</span>
+                        </label>
+                    </div>
+                </div>
+                <p id="regex-error" class="mt-1 text-red-500 text-sm hidden">Invalid regular expression</p>
+            </div>
+
+            <div class="mb-6">
+                <label for="testText" class="block mb-2 font-medium text-gray-700">Test Text</label>
+                <textarea id="testText" rows="6" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter text to test against the regex pattern"></textarea>
+            </div>
+
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button id="testBtn" class="btn-primary px-6 py-2 rounded-lg font-medium flex items-center">
+                    <i class="fas fa-play mr-2"></i> Test Regex
+                </button>
+                <button id="clearBtn" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium flex items-center hover:bg-gray-300">
+                    <i class="fas fa-eraser mr-2"></i> Clear
+                </button>
+                <button id="copyBtn" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium flex items-center hover:bg-gray-300">
+                    <i class="fas fa-copy mr-2"></i> Copy Output
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="bg-gray-100 p-4 rounded-t-lg border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-700">Results</h2>
+            </div>
+            <div id="results" class="p-6">
+                <p class="text-gray-500 text-center">Enter a regular expression and test text above, then click "Test Regex" to see results.</p>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">How to use this Regex Tester:</h3>
+            <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                <li>Enter your regular expression in the "Regular Expression" field</li>
+                <li>Select any flags you want to apply (global, case-insensitive, multiline)</li>
+                <li>Enter the text you want to test in the "Test Text" area</li>
+                <li>Click "Test Regex" to see matches, groups, and other info</li>
+                <li>Use "Copy Output" to copy results to clipboard</li>
+                <li>Click "Clear" to reset all fields</li>
+            </ol>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="mb-6 md:mb-0 flex items-center">
+                    <img src="https://page1.genspark.site/v1/base64_upload/ff62613fc936f7e7939c33e1bc984c5f" alt="Profile" class="profile-image mr-4">
+                    <div>
+                        <h3 class="text-lg font-bold">MD Naeem Akhtar</h3>
+                        <a href="https://www.instagram.com/naeem_bhai_078" target="_blank" class="footer-link flex items-center mt-1">
+                            <i class="fab fa-instagram mr-2"></i> @naeem_bhai_078
+                        </a>
+                    </div>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-sm text-gray-400">All rights reserved by Tools Ocean</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const regexInput = document.getElementById('regex');
+            const testText = document.getElementById('testText');
+            const flagsGlobal = document.getElementById('flagsGlobal');
+            const flagsCase = document.getElementById('flagsCase');
+            const flagsMultiline = document.getElementById('flagsMultiline');
+            const testBtn = document.getElementById('testBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const resultsDiv = document.getElementById('results');
+            const regexError = document.getElementById('regex-error');
+
+            // Auto-test when inputs change (with debounce)
+            let debounceTimeout;
+            const debounceTime = 500; // ms
+            
+            [regexInput, testText, flagsGlobal, flagsCase, flagsMultiline].forEach(el => {
+                el.addEventListener('input', function() {
+                    clearTimeout(debounceTimeout);
+                    debounceTimeout = setTimeout(testRegex, debounceTime);
+                });
+            });
+
+            // Button event listeners
+            testBtn.addEventListener('click', testRegex);
+            clearBtn.addEventListener('click', clearAll);
+            copyBtn.addEventListener('click', copyResults);
+
+            function testRegex() {
+                const pattern = regexInput.value;
+                const text = testText.value;
+                
+                if (!pattern || !text) {
+                    resultsDiv.innerHTML = '<p class="text-gray-500 text-center">Please enter both a regular expression and test text.</p>';
+                    return;
+                }
+
+                // Build flags
+                let flags = '';
+                if (flagsGlobal.checked) flags += 'g';
+                if (flagsCase.checked) flags += 'i';
+                if (flagsMultiline.checked) flags += 'm';
+
+                try {
+                    const regex = new RegExp(pattern, flags);
+                    regexError.classList.add('hidden');
+                    
+                    // Process matches
+                    const matches = [];
+                    let match;
+                    
+                    if (flags.includes('g')) {
+                        while ((match = regex.exec(text)) !== null) {
+                            matches.push({
+                                index: match.index,
+                                match: match[0],
+                                groups: match.slice(1)
+                            });
+                        }
+                    } else {
+                        match = regex.exec(text);
+                        if (match) {
+                            matches.push({
+                                index: match.index,
+                                match: match[0],
+                                groups: match.slice(1)
+                            });
+                        }
+                    }
+
+                    // Display results
+                    displayResults(matches, text, regex);
+                } catch (e) {
+                    regexError.textContent = e.message;
+                    regexError.classList.remove('hidden');
+                    resultsDiv.innerHTML = `
+                        <div class="bg-red-100 border-l-4 border-red-500 p-4">
+                            <p class="text-red-700">Error: ${e.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function displayResults(matches, text, regex) {
+                if (matches.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4">
+                            <p class="text-yellow-700">No matches found.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Summary
+                let html = `
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">Summary</h3>
+                        <div class="bg-blue-50 p-4 rounded-lg mt-2">
+                            <p><span class="font-medium">Total matches:</span> ${matches.length}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Highlighted text
+                html += `
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">Highlighted Text</h3>
+                        <div class="bg-white border border-gray-200 p-4 rounded-lg mt-2 whitespace-pre-wrap">
+                            ${highlightMatches(text, matches)}
+                        </div>
+                    </div>
+                `;
+
+                // Individual matches
+                html += `
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Matches</h3>
+                        <div class="space-y-4 mt-2">
+                `;
+
+                matches.forEach((match, i) => {
+                    html += `
+                        <div class="match-item rounded">
+                            <h4 class="font-bold">Match #${i + 1} <span class="text-gray-500">(position: ${match.index})</span></h4>
+                            <div class="mt-2">
+                                <p class="font-medium">Matched text:</p>
+                                <pre class="bg-gray-100 p-2 rounded mt-1 text-sm overflow-x-auto">${escapeHtml(match.match)}</pre>
+                            </div>
+                    `;
+
+                    if (match.groups.length > 0) {
+                        html += `<div class="mt-3"><p class="font-medium">Capture groups:</p>`;
+                        match.groups.forEach((group, j) => {
+                            html += `
+                                <div class="mt-1">
+                                    <p class="text-sm text-gray-600">Group #${j + 1}:</p>
+                                    <pre class="bg-gray-100 p-2 rounded mt-1 text-sm overflow-x-auto">${group !== undefined ? escapeHtml(group) : '<span class="text-gray-400">undefined</span>'}</pre>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    }
+
+                    html += `</div>`;
+                });
+
+                html += `</div></div>`;
+                resultsDiv.innerHTML = html;
+            }
+
+            function highlightMatches(text, matches) {
+                if (!matches.length) return escapeHtml(text);
+                
+                // Create a list of positions to insert highlight tags
+                let positions = [];
+                
+                matches.forEach(match => {
+                    positions.push({
+                        pos: match.index,
+                        tag: '<span class="highlight">'
+                    });
+                    
+                    positions.push({
+                        pos: match.index + match.match.length,
+                        tag: '</span>'
+                    });
+                });
+                
+                // Sort positions by their position in text
+                positions.sort((a, b) => a.pos - b.pos);
+                
+                // Insert highlight tags
+                let result = '';
+                let lastPosition = 0;
+                
+                positions.forEach(pos => {
+                    // Add text from last position to current tag position
+                    result += escapeHtml(text.substring(lastPosition, pos.pos));
+                    // Add the tag
+                    result += pos.tag;
+                    // Update last position
+                    lastPosition = pos.pos;
+                });
+                
+                // Add any remaining text
+                result += escapeHtml(text.substring(lastPosition));
+                
+                return result;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function clearAll() {
+                regexInput.value = '';
+                testText.value = '';
+                resultsDiv.innerHTML = '<p class="text-gray-500 text-center">Enter a regular expression and test text above, then click "Test Regex" to see results.</p>';
+                regexError.classList.add('hidden');
+            }
+
+            function copyResults() {
+                // Create a temporary element to hold the text content
+                const tempElem = document.createElement('div');
+                tempElem.innerHTML = resultsDiv.innerHTML
+                    .replace(/<span class="highlight">/g, '')
+                    .replace(/<\/span>/g, '');
+                
+                // Extract text content without HTML tags
+                const textToCopy = tempElem.textContent.trim();
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // Show copy success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg';
+                    notification.textContent = 'Results copied to clipboard!';
+                    document.body.appendChild(notification);
+                    
+                    // Remove notification after 2 seconds
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 2000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
