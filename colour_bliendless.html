@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Blindness Simulator - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --background-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e2e8f0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .image-container {
+            min-height: 200px;
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+        }
+        
+        .simulation-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .custom-file-upload {
+            cursor: pointer;
+        }
+        
+        .loading {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        }
+        
+        #dragArea {
+            border: 2px dashed var(--border-color);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        #dragArea.drag-over {
+            background-color: rgba(0, 123, 255, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .slider-container {
+            margin-top: 10px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-gradient text-white py-6 shadow-md">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold text-center">Color Blindness Simulator</h1>
+            <p class="text-center mt-2">See how images appear to people with different types of color blindness</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div id="dragArea" class="mb-6">
+                <div class="text-center">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-3"></i>
+                    <h3 class="font-semibold mb-2">Upload an Image</h3>
+                    <p class="text-gray-600 mb-4">Drag and drop an image here or click to browse</p>
+                    <label class="btn-primary py-2 px-4 rounded inline-block cursor-pointer">
+                        <input type="file" id="imageUpload" class="hidden" accept="image/*">
+                        Choose File
+                    </label>
+                </div>
+            </div>
+
+            <div id="loadingIndicator" class="hidden">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div id="imagePreview" class="hidden mb-6">
+                <h3 class="text-xl font-semibold mb-4">Original Image</h3>
+                <div class="image-container bg-gray-100 p-4 rounded-lg">
+                    <img id="originalImage" src="#" alt="Original image" class="mx-auto">
+                </div>
+            </div>
+
+            <div class="mb-6 hidden" id="simulationControls">
+                <h3 class="text-xl font-semibold mb-3">Simulation Settings</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">Simulation Type</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button 
+                                    data-type="deuteranopia"
+                                    class="simulation-button btn-primary py-1 px-3 rounded text-sm md:text-base">
+                                    Deuteranopia (Green-Blind)
+                                </button>
+                                <button 
+                                    data-type="protanopia"
+                                    class="simulation-button btn-primary py-1 px-3 rounded text-sm md:text-base">
+                                    Protanopia (Red-Blind)
+                                </button>
+                                <button 
+                                    data-type="tritanopia"
+                                    class="simulation-button btn-primary py-1 px-3 rounded text-sm md:text-base">
+                                    Tritanopia (Blue-Blind)
+                                </button>
+                                <button 
+                                    data-type="achromatopsia"
+                                    class="simulation-button btn-primary py-1 px-3 rounded text-sm md:text-base">
+                                    Achromatopsia (Monochromacy)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">Severity Level</label>
+                            <input 
+                                type="range" 
+                                id="severitySlider" 
+                                min="0" 
+                                max="100" 
+                                value="100" 
+                                class="w-full"
+                            >
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>Normal</span>
+                                <span>Moderate</span>
+                                <span>Severe</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <button id="resetButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded transition">
+                        Reset
+                    </button>
+                    <button id="simulateButton" class="btn-primary py-2 px-4 rounded">
+                        Simulate
+                    </button>
+                </div>
+            </div>
+
+            <div id="simulationResults" class="hidden">
+                <h3 class="text-xl font-semibold mb-4">Simulation Results</h3>
+                <div class="simulation-container" id="resultsContainer"></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">About Color Blindness</h2>
+            <div class="space-y-4 text-gray-700">
+                <p>Color blindness affects approximately 1 in 12 men and 1 in 200 women worldwide. It's usually inherited and makes it difficult to distinguish between certain colors.</p>
+                
+                <div class="mb-3">
+                    <h3 class="text-xl font-medium mb-2">Types of Color Blindness:</h3>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Deuteranopia:</strong> Difficulty distinguishing between green and red colors. Green appears more like beige or gray.</li>
+                        <li><strong>Protanopia:</strong> Difficulty distinguishing between red and green colors. Red appears more like black.</li>
+                        <li><strong>Tritanopia:</strong> Difficulty distinguishing between blue and yellow colors. Very rare, affecting less than 0.01% of people.</li>
+                        <li><strong>Achromatopsia:</strong> Complete color blindness, seeing only in shades of gray. Extremely rare.</li>
+                    </ul>
+                </div>
+                
+                <p>This simulator helps designers and content creators understand how their visual content might be perceived by people with different types of color vision deficiency, enabling more accessible design choices.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p>&copy; 2023 All rights reserved by Tools Ocean</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p>Created by MD Naeem Akhtar</p>
+                    <div class="flex justify-center md:justify-end mt-2">
+                        <a href="https://www.instagram.com/naeem_bhai_078" class="text-white hover:text-blue-300 mx-2" target="_blank">
+                            <i class="fab fa-instagram"></i> @naeem_bhai_078
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const imageUpload = document.getElementById('imageUpload');
+            const dragArea = document.getElementById('dragArea');
+            const originalImage = document.getElementById('originalImage');
+            const imagePreview = document.getElementById('imagePreview');
+            const simulationControls = document.getElementById('simulationControls');
+            const simulationResults = document.getElementById('simulationResults');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const simulateButton = document.getElementById('simulateButton');
+            const resetButton = document.getElementById('resetButton');
+            const severitySlider = document.getElementById('severitySlider');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // Variables
+            let selectedSimType = 'deuteranopia';
+            let originalImageObj = null;
+            
+            // Color matrices for different types of color blindness
+            const colorMatrices = {
+                deuteranopia: [
+                    0.625, 0.375, 0, 0, 0,
+                    0.7, 0.3, 0, 0, 0,
+                    0, 0.3, 0.7, 0, 0,
+                    0, 0, 0, 1, 0
+                ],
+                protanopia: [
+                    0.567, 0.433, 0, 0, 0,
+                    0.558, 0.442, 0, 0, 0,
+                    0, 0.242, 0.758, 0, 0,
+                    0, 0, 0, 1, 0
+                ],
+                tritanopia: [
+                    0.95, 0.05, 0, 0, 0,
+                    0, 0.433, 0.567, 0, 0,
+                    0, 0.475, 0.525, 0, 0,
+                    0, 0, 0, 1, 0
+                ],
+                achromatopsia: [
+                    0.299, 0.587, 0.114, 0, 0,
+                    0.299, 0.587, 0.114, 0, 0,
+                    0.299, 0.587, 0.114, 0, 0,
+                    0, 0, 0, 1, 0
+                ]
+            };
+            
+            // Event handlers
+            imageUpload.addEventListener('change', handleImageUpload);
+            dragArea.addEventListener('dragover', handleDragOver);
+            dragArea.addEventListener('dragleave', handleDragLeave);
+            dragArea.addEventListener('drop', handleDrop);
+            dragArea.addEventListener('click', () => imageUpload.click());
+            simulateButton.addEventListener('click', simulateColorBlindness);
+            resetButton.addEventListener('click', resetSimulation);
+            
+            // Select simulation type buttons
+            document.querySelectorAll('.simulation-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.simulation-button').forEach(btn => {
+                        btn.classList.remove('bg-blue-800');
+                    });
+                    this.classList.add('bg-blue-800');
+                    selectedSimType = this.getAttribute('data-type');
+                });
+            });
+            
+            // Handle file upload
+            function handleImageUpload(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    processImage(file);
+                }
+            }
+            
+            // Handle drag over
+            function handleDragOver(e) {
+                e.preventDefault();
+                dragArea.classList.add('drag-over');
+            }
+            
+            // Handle drag leave
+            function handleDragLeave(e) {
+                e.preventDefault();
+                dragArea.classList.remove('drag-over');
+            }
+            
+            // Handle drop
+            function handleDrop(e) {
+                e.preventDefault();
+                dragArea.classList.remove('drag-over');
+                
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.match('image.*')) {
+                    processImage(file);
+                }
+            }
+            
+            // Process the uploaded image
+            function processImage(file) {
+                showLoading(true);
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    originalImage.src = event.target.result;
+                    originalImage.onload = function() {
+                        originalImageObj = new Image();
+                        originalImageObj.src = event.target.result;
+                        originalImageObj.onload = function() {
+                            imagePreview.classList.remove('hidden');
+                            simulationControls.classList.remove('hidden');
+                            dragArea.classList.add('hidden');
+                            showLoading(false);
+                        };
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Simulate color blindness
+            function simulateColorBlindness() {
+                if (!originalImageObj) return;
+                
+                showLoading(true);
+                
+                setTimeout(() => {
+                    resultsContainer.innerHTML = '';
+                    
+                    // Create original image div
+                    const originalDiv = createResultDiv('Original');
+                    const originalCanvas = document.createElement('canvas');
+                    const originalCtx = originalCanvas.getContext('2d');
+                    originalCanvas.width = originalImageObj.width;
+                    originalCanvas.height = originalImageObj.height;
+                    originalCtx.drawImage(originalImageObj, 0, 0);
+                    originalDiv.querySelector('.result-image').appendChild(originalCanvas);
+                    resultsContainer.appendChild(originalDiv);
+                    
+                    // Create simulated image div
+                    const simDiv = createResultDiv(capitalizeFirstLetter(selectedSimType));
+                    const simCanvas = document.createElement('canvas');
+                    const simCtx = simCanvas.getContext('2d');
+                    simCanvas.width = originalImageObj.width;
+                    simCanvas.height = originalImageObj.height;
+                    simCtx.drawImage(originalImageObj, 0, 0);
+                    
+                    // Apply color matrix
+                    const imageData = simCtx.getImageData(0, 0, simCanvas.width, simCanvas.height);
+                    const data = imageData.data;
+                    const matrix = colorMatrices[selectedSimType];
+                    const severity = severitySlider.value / 100;
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        
+                        // Apply color transformation based on severity
+                        if (severity > 0) {
+                            const newR = r * (1 - severity) + (r * matrix[0] + g * matrix[1] + b * matrix[2]) * severity;
+                            const newG = g * (1 - severity) + (r * matrix[5] + g * matrix[6] + b * matrix[7]) * severity;
+                            const newB = b * (1 - severity) + (r * matrix[10] + g * matrix[11] + b * matrix[12]) * severity;
+                            
+                            data[i] = Math.round(newR);
+                            data[i + 1] = Math.round(newG);
+                            data[i + 2] = Math.round(newB);
+                        }
+                    }
+                    
+                    simCtx.putImageData(imageData, 0, 0);
+                    simDiv.querySelector('.result-image').appendChild(simCanvas);
+                    resultsContainer.appendChild(simDiv);
+                    
+                    simulationResults.classList.remove('hidden');
+                    showLoading(false);
+                }, 100);
+            }
+            
+            // Reset simulation
+            function resetSimulation() {
+                imagePreview.classList.add('hidden');
+                simulationControls.classList.add('hidden');
+                simulationResults.classList.add('hidden');
+                dragArea.classList.remove('hidden');
+                originalImage.src = '#';
+                originalImageObj = null;
+                selectedSimType = 'deuteranopia';
+                severitySlider.value = 100;
+                resultsContainer.innerHTML = '';
+                
+                // Reset simulation type buttons
+                document.querySelectorAll('.simulation-button').forEach(btn => {
+                    btn.classList.remove('bg-blue-800');
+                });
+                document.querySelector('[data-type="deuteranopia"]').classList.add('bg-blue-800');
+                
+                // Reset file input
+                imageUpload.value = '';
+            }
+            
+            // Create a div for a result
+            function createResultDiv(title) {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-100 p-4 rounded-lg';
+                div.innerHTML = `
+                    <h4 class="text-lg font-medium mb-2">${title}</h4>
+                    <div class="result-image flex justify-center items-center"></div>
+                `;
+                return div;
+            }
+            
+            // Show/hide loading
+            function showLoading(show) {
+                if (show) {
+                    loadingIndicator.classList.remove('hidden');
+                } else {
+                    loadingIndicator.classList.add('hidden');
+                }
+            }
+            
+            // Capitalize first letter
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            // Initialize: Set the first simulation type as active
+            document.querySelector('[data-type="deuteranopia"]').classList.add('bg-blue-800');
+        });
+    </script>
+</body>
+</html>
