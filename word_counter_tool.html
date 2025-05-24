@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Counter - Tools Ocean</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0077ff;
+            --light-blue: #e6f0ff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .counter-container {
+            background: linear-gradient(135deg, #ffffff 0%, var(--light-blue) 100%);
+        }
+        .header-gradient {
+            background: linear-gradient(90deg, var(--primary-blue), #4aa3ff);
+        }
+        .stats-item {
+            border-left: 3px solid var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+        .stats-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        textarea:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient text-white py-6 px-4 shadow-md">
+        <div class="container mx-auto">
+            <h1 class="text-3xl md:text-4xl font-bold text-center">Word Counter Tool</h1>
+            <p class="text-center mt-2 text-sm md:text-base opacity-90">Count words, characters, sentences and paragraphs instantly</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-6 md:py-10">
+        <div class="counter-container rounded-lg shadow-lg p-4 md:p-6 max-w-4xl mx-auto">
+            <!-- Text Area -->
+            <div class="mb-6">
+                <label for="text-input" class="block text-gray-700 font-semibold mb-2">Enter or paste your text below:</label>
+                <textarea id="text-input" class="w-full h-64 p-4 border border-gray-300 rounded-lg focus:outline-none transition" placeholder="Type or paste your text here..."></textarea>
+            </div>
+
+            <!-- Stats Display -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+                <div class="stats-item bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-font text-xl text-blue-500 mr-2"></i>
+                        <h3 class="text-gray-700 font-medium">Words</h3>
+                    </div>
+                    <p id="word-count" class="text-2xl md:text-3xl font-bold text-blue-600 mt-2">0</p>
+                </div>
+                
+                <div class="stats-item bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-text-width text-xl text-blue-500 mr-2"></i>
+                        <h3 class="text-gray-700 font-medium">Characters</h3>
+                    </div>
+                    <p id="char-count" class="text-2xl md:text-3xl font-bold text-blue-600 mt-2">0</p>
+                </div>
+                
+                <div class="stats-item bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-spell-check text-xl text-blue-500 mr-2"></i>
+                        <h3 class="text-gray-700 font-medium">Characters (no spaces)</h3>
+                    </div>
+                    <p id="char-no-spaces" class="text-2xl md:text-3xl font-bold text-blue-600 mt-2">0</p>
+                </div>
+                
+                <div class="stats-item bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-paragraph text-xl text-blue-500 mr-2"></i>
+                        <h3 class="text-gray-700 font-medium">Paragraphs</h3>
+                    </div>
+                    <p id="paragraph-count" class="text-2xl md:text-3xl font-bold text-blue-600 mt-2">0</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+                <div class="stats-item bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-quote-right text-xl text-blue-500 mr-2"></i>
+                        <h3 class="text-gray-700 font-medium">Sentences</h3>
+                    </div>
+                    <p id="sentence-count" class="text-2xl md:text-3xl font-bold text-blue-600 mt-2">0</p>
+                </div>
+                
+                <div class="stats-item bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-xl text-blue-500 mr-2"></i>
+                        <h3 class="text-gray-700 font-medium">Reading Time</h3>
+                    </div>
+                    <p id="reading-time" class="text-2xl md:text-3xl font-bold text-blue-600 mt-2">0 sec</p>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button id="clear-btn" class="btn bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center">
+                    <i class="fas fa-trash-alt mr-2"></i> Clear Text
+                </button>
+                <button id="copy-btn" class="btn bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center">
+                    <i class="fas fa-copy mr-2"></i> Copy Text
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 px-4">
+        <div class="container mx-auto max-w-4xl">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold text-blue-400">Tools Ocean</h3>
+                    <p class="mt-1 text-sm text-gray-400">A collection of useful web tools</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-sm">Credit: MD Naeem Akhtar</p>
+                    <div class="flex items-center justify-center md:justify-end mt-2">
+                        <a href="https://www.instagram.com/naeem_bhai_078" target="_blank" class="text-blue-400 hover:text-blue-300 transition">
+                            <i class="fab fa-instagram text-xl mr-1"></i> @naeem_bhai_078
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-sm text-gray-400">
+                <p>All rights reserved by Tools Ocean &copy; <span id="current-year"></span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // DOM elements
+        const textInput = document.getElementById('text-input');
+        const wordCount = document.getElementById('word-count');
+        const charCount = document.getElementById('char-count');
+        const charNoSpaces = document.getElementById('char-no-spaces');
+        const sentenceCount = document.getElementById('sentence-count');
+        const paragraphCount = document.getElementById('paragraph-count');
+        const readingTime = document.getElementById('reading-time');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+
+        // Update stats function
+        function updateStats() {
+            const text = textInput.value;
+            
+            // Word count
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            wordCount.textContent = words;
+            
+            // Character count (with spaces)
+            charCount.textContent = text.length;
+            
+            // Character count (without spaces)
+            charNoSpaces.textContent = text.replace(/\s+/g, '').length;
+            
+            // Sentence count
+            const sentences = text ? text.split(/[.!?]+/).filter(sentence => sentence.trim() !== '').length : 0;
+            sentenceCount.textContent = sentences;
+            
+            // Paragraph count
+            const paragraphs = text ? text.split(/\n+/).filter(para => para.trim() !== '').length : 0;
+            paragraphCount.textContent = paragraphs;
+            
+            // Reading time (average reading speed: 225 words per minute)
+            const readingTimeInSeconds = Math.ceil(words / 225 * 60);
+            
+            if (readingTimeInSeconds < 60) {
+                readingTime.textContent = `${readingTimeInSeconds} sec`;
+            } else {
+                const minutes = Math.floor(readingTimeInSeconds / 60);
+                const seconds = readingTimeInSeconds % 60;
+                readingTime.textContent = `${minutes} min ${seconds} sec`;
+            }
+        }
+
+        // Event listeners
+        textInput.addEventListener('input', updateStats);
+        
+        clearBtn.addEventListener('click', function() {
+            textInput.value = '';
+            updateStats();
+            textInput.focus();
+        });
+        
+        copyBtn.addEventListener('click', function() {
+            textInput.select();
+            document.execCommand('copy');
+            
+            // Show temporary success message
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
+            copyBtn.classList.add('bg-green-500');
+            copyBtn.classList.remove('bg-blue-500');
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.classList.remove('bg-green-500');
+                copyBtn.classList.add('bg-blue-500');
+            }, 2000);
+        });
+
+        // Initialize stats
+        updateStats();
+    </script>
+</body>
+</html>
