@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Tag Analyzer - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0070f3;
+            --light-blue: #e6f0ff;
+            --hover-blue: #0051b3;
+        }
+        .custom-blue-bg {
+            background-color: var(--primary-blue);
+        }
+        .custom-light-bg {
+            background-color: var(--light-blue);
+        }
+        .custom-blue-text {
+            color: var(--primary-blue);
+        }
+        .custom-blue-border {
+            border-color: var(--primary-blue);
+        }
+        .btn-blue {
+            background-color: var(--primary-blue);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-blue:hover {
+            background-color: var(--hover-blue);
+        }
+        .loader {
+            border-top-color: var(--primary-blue);
+            animation: spinner 1s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tag-card {
+            transition: all 0.3s ease;
+        }
+        .tag-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .good { color: green; }
+        .warning { color: orange; }
+        .bad { color: red; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="custom-blue-bg text-white shadow-md">
+        <div class="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold text-center">Meta Tag Analyzer</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4 custom-blue-text">Analyze Website Meta Tags</h2>
+                <div class="mb-4">
+                    <label for="url-input" class="block text-gray-700 mb-2">Enter Website URL</label>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="url" id="url-input" placeholder="https://example.com" 
+                            class="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300" required>
+                        <button id="analyze-btn" class="btn-blue px-6 py-2 rounded-md font-medium">
+                            Analyze Meta Tags
+                        </button>
+                    </div>
+                </div>
+                <div id="error-message" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4"></div>
+            </div>
+
+            <div id="loading" class="hidden flex justify-center items-center py-12">
+                <div class="loader h-12 w-12 rounded-full border-4 border-gray-200"></div>
+                <span class="ml-3 text-lg text-gray-700">Analyzing website...</span>
+            </div>
+
+            <div id="results-container" class="hidden">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h2 class="text-2xl font-semibold mb-4 custom-blue-text">Analysis Results</h2>
+                    <div id="website-info" class="mb-6 pb-6 border-b border-gray-200">
+                        <h3 class="text-xl font-medium mb-2">Website Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-600 mb-1">URL:</p>
+                                <p id="result-url" class="font-medium"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 mb-1">Analysis Date:</p>
+                                <p id="analysis-date" class="font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium mb-4">Meta Tags Overview</h3>
+                        <div id="meta-tags-overview" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Meta tags will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium mb-4">SEO Recommendations</h3>
+                        <div id="seo-recommendations" class="bg-blue-50 p-4 rounded-md">
+                            <!-- SEO recommendations will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium mb-4">HTML Source</h3>
+                        <div class="relative">
+                            <button id="copy-html-btn" class="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre id="html-source" class="bg-gray-800 text-gray-200 p-4 rounded-md text-sm overflow-x-auto max-h-96"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="custom-blue-bg text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <h2 class="text-2xl font-bold mb-2">Tools Ocean</h2>
+                    <p class="text-blue-100">All rights reserved by Tools Ocean</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="mb-2">Made in India 🇮🇳</p>
+                    <div class="flex items-center space-x-4 justify-center md:justify-end">
+                        <p>Follow us:</p>
+                        <a href="https://www.instagram.com/naeem_bhai_078" target="_blank" class="text-white hover:text-blue-200">
+                            <i class="fab fa-instagram"></i> @naeem_bhai_078
+                        </a>
+                    </div>
+                    <p class="mt-2">Credit: MD Naeem Akhtar</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('url-input');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const errorMessage = document.getElementById('error-message');
+            const loading = document.getElementById('loading');
+            const resultsContainer = document.getElementById('results-container');
+            const resultUrl = document.getElementById('result-url');
+            const analysisDate = document.getElementById('analysis-date');
+            const metaTagsOverview = document.getElementById('meta-tags-overview');
+            const seoRecommendations = document.getElementById('seo-recommendations');
+            const htmlSource = document.getElementById('html-source');
+            const copyHtmlBtn = document.getElementById('copy-html-btn');
+
+            // Event listeners
+            analyzeBtn.addEventListener('click', analyzeWebsite);
+            copyHtmlBtn.addEventListener('click', copyHtmlSource);
+
+            function analyzeWebsite() {
+                // Reset previous results
+                errorMessage.classList.add('hidden');
+                errorMessage.textContent = '';
+                
+                const url = urlInput.value.trim();
+                if (!url) {
+                    showError('Please enter a valid URL');
+                    return;
+                }
+
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    urlInput.value = 'https://' + url;
+                }
+
+                // Show loading
+                loading.classList.remove('hidden');
+                resultsContainer.classList.add('hidden');
+
+                // In a real implementation, we would fetch the meta tags from the server
+                // For this demo, we'll simulate a response after a delay
+                setTimeout(() => {
+                    // Simulate fetching meta data with mock data
+                    mockFetchMetaTags(urlInput.value)
+                        .then(data => {
+                            displayResults(data);
+                            loading.classList.add('hidden');
+                            resultsContainer.classList.remove('hidden');
+                        })
+                        .catch(err => {
+                            loading.classList.add('hidden');
+                            showError(err.message || 'Failed to analyze website');
+                        });
+                }, 1500);
+            }
+
+            function mockFetchMetaTags(url) {
+                return new Promise((resolve) => {
+                    // This is a simulation since we can't actually fetch meta tags from a client-side only app
+                    // In a real app, this would be a server-side API call
+                    
+                    // Mock data for demonstration
+                    const mockMetaTags = {
+                        title: {
+                            content: 'Example Website - Home Page',
+                            length: 24
+                        },
+                        description: {
+                            content: 'This is an example website with various meta tags for demonstration purposes. The meta tags include title, description, keywords, and others.',
+                            length: 119
+                        },
+                        keywords: {
+                            content: 'meta tags, SEO, example, demonstration, web development',
+                            length: 55
+                        },
+                        'og:title': {
+                            content: 'Example Website - Share on Social Media',
+                            length: 36
+                        },
+                        'og:description': {
+                            content: 'Check out this awesome website with great content!',
+                            length: 49
+                        },
+                        'og:image': {
+                            content: 'https://example.com/image.jpg',
+                            length: 28
+                        },
+                        'twitter:card': {
+                            content: 'summary_large_image',
+                            length: 19
+                        },
+                        canonical: {
+                            content: url,
+                            length: url.length
+                        },
+                        robots: {
+                            content: 'index, follow',
+                            length: 13
+                        },
+                        viewport: {
+                            content: 'width=device-width, initial-scale=1.0',
+                            length: 35
+                        }
+                    };
+
+                    const mockHtmlSource = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Website - Home Page</title>
+    <meta name="description" content="This is an example website with various meta tags for demonstration purposes. The meta tags include title, description, keywords, and others.">
+    <meta name="keywords" content="meta tags, SEO, example, demonstration, web development">
+    <meta property="og:title" content="Example Website - Share on Social Media">
+    <meta property="og:description" content="Check out this awesome website with great content!">
+    <meta property="og:image" content="https://example.com/image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="${url}">
+    <meta name="robots" content="index, follow">
+</head>
+<body>
+    <!-- Page content -->
+</body>
+</html>`;
+
+                    resolve({
+                        url: url,
+                        metaTags: mockMetaTags,
+                        htmlSource: mockHtmlSource
+                    });
+                });
+            }
+
+            function displayResults(data) {
+                // Display website info
+                resultUrl.textContent = data.url;
+                analysisDate.textContent = new Date().toLocaleString();
+
+                // Clear previous results
+                metaTagsOverview.innerHTML = '';
+                seoRecommendations.innerHTML = '';
+
+                // Display meta tags
+                for (const [name, info] of Object.entries(data.metaTags)) {
+                    const status = getTagStatus(name, info);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'tag-card bg-white rounded-lg shadow-sm p-4 border-l-4 ' + status.borderClass;
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between">
+                            <h4 class="font-bold text-gray-800">${formatTagName(name)}</h4>
+                            <span class="${status.textClass} text-sm font-medium">${status.label}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Length: ${info.length} characters</p>
+                        <div class="mt-2 text-sm overflow-hidden text-ellipsis">
+                            <p class="font-medium text-gray-600">Content:</p>
+                            <p class="text-gray-800 break-words">${escapeHtml(info.content)}</p>
+                        </div>
+                    `;
+                    metaTagsOverview.appendChild(card);
+                }
+
+                // Generate SEO recommendations
+                const recommendationsList = document.createElement('ul');
+                recommendationsList.className = 'space-y-2';
+                
+                const recommendations = generateSeoRecommendations(data.metaTags);
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start';
+                    li.innerHTML = `
+                        <span class="mr-2 mt-1 flex-shrink-0">${rec.icon}</span>
+                        <span>${rec.text}</span>
+                    `;
+                    recommendationsList.appendChild(li);
+                });
+
+                seoRecommendations.appendChild(recommendationsList);
+
+                // Display HTML source
+                htmlSource.textContent = data.htmlSource;
+            }
+
+            function formatTagName(name) {
+                if (name.startsWith('og:')) {
+                    return `Open Graph: ${name.substring(3)}`;
+                } else if (name.startsWith('twitter:')) {
+                    return `Twitter: ${name.substring(8)}`;
+                } else {
+                    return name.charAt(0).toUpperCase() + name.slice(1);
+                }
+            }
+
+            function getTagStatus(name, info) {
+                switch (name) {
+                    case 'title':
+                        if (info.length < 10) {
+                            return { label: 'Too Short', textClass: 'bad', borderClass: 'border-red-500' };
+                        } else if (info.length > 60) {
+                            return { label: 'Too Long', textClass: 'warning', borderClass: 'border-yellow-500' };
+                        } else {
+                            return { label: 'Good', textClass: 'good', borderClass: 'border-green-500' };
+                        }
+                    case 'description':
+                        if (info.length < 50) {
+                            return { label: 'Too Short', textClass: 'bad', borderClass: 'border-red-500' };
+                        } else if (info.length > 160) {
+                            return { label: 'Too Long', textClass: 'warning', borderClass: 'border-yellow-500' };
+                        } else {
+                            return { label: 'Good', textClass: 'good', borderClass: 'border-green-500' };
+                        }
+                    case 'keywords':
+                        if (info.length < 20) {
+                            return { label: 'Too Few', textClass: 'warning', borderClass: 'border-yellow-500' };
+                        } else if (info.length > 200) {
+                            return { label: 'Too Many', textClass: 'warning', borderClass: 'border-yellow-500' };
+                        } else {
+                            return { label: 'Good', textClass: 'good', borderClass: 'border-green-500' };
+                        }
+                    default:
+                        return { label: 'Present', textClass: 'text-blue-600', borderClass: 'border-blue-500' };
+                }
+            }
+
+            function generateSeoRecommendations(metaTags) {
+                const recommendations = [];
+
+                // Title recommendations
+                if (!metaTags.title) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-times-circle text-red-500"></i>',
+                        text: '<strong>Missing title tag</strong>. Add a descriptive title tag (50-60 characters).'
+                    });
+                } else if (metaTags.title.length < 10) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: '<strong>Title is too short</strong>. Make it more descriptive (50-60 characters ideal).'
+                    });
+                } else if (metaTags.title.length > 60) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: `<strong>Title is too long</strong> (${metaTags.title.length} characters). Keep it under 60 characters to prevent truncation in search results.`
+                    });
+                } else {
+                    recommendations.push({
+                        icon: '<i class="fas fa-check-circle text-green-500"></i>',
+                        text: '<strong>Title length is good</strong>. Well-optimized for search engines.'
+                    });
+                }
+
+                // Description recommendations
+                if (!metaTags.description) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-times-circle text-red-500"></i>',
+                        text: '<strong>Missing meta description</strong>. Add a compelling description (120-160 characters).'
+                    });
+                } else if (metaTags.description.length < 50) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: '<strong>Description is too short</strong>. Make it more informative (120-160 characters ideal).'
+                    });
+                } else if (metaTags.description.length > 160) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: `<strong>Description is too long</strong> (${metaTags.description.length} characters). Keep it under 160 characters to prevent truncation in search results.`
+                    });
+                } else {
+                    recommendations.push({
+                        icon: '<i class="fas fa-check-circle text-green-500"></i>',
+                        text: '<strong>Description length is good</strong>. Well-optimized for search engines.'
+                    });
+                }
+
+                // Open Graph recommendations
+                if (!metaTags['og:title'] || !metaTags['og:description']) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: '<strong>Missing Open Graph tags</strong>. Add og:title, og:description, and og:image for better social media sharing.'
+                    });
+                }
+
+                // Canonical tag recommendation
+                if (!metaTags.canonical) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: '<strong>Missing canonical tag</strong>. Add a canonical tag to prevent duplicate content issues.'
+                    });
+                }
+
+                // Robots tag recommendation
+                if (!metaTags.robots) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-info-circle text-blue-500"></i>',
+                        text: '<strong>No robots directive found</strong>. Consider adding a meta robots tag for search engine crawling instructions.'
+                    });
+                }
+
+                // Add a general recommendation for keywords (even though modern SEO places less emphasis on the keywords meta tag)
+                if (!metaTags.keywords) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-info-circle text-blue-500"></i>',
+                        text: '<strong>No keywords meta tag found</strong>. While less important for rankings, it can help define your page\'s topic.'
+                    });
+                }
+
+                // Mobile viewport recommendation
+                if (!metaTags.viewport) {
+                    recommendations.push({
+                        icon: '<i class="fas fa-exclamation-triangle text-yellow-500"></i>',
+                        text: '<strong>Missing viewport meta tag</strong>. Add a viewport meta tag for better mobile optimization.'
+                    });
+                }
+
+                return recommendations;
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function copyHtmlSource() {
+                const text = htmlSource.textContent;
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        const originalText = copyHtmlBtn.innerHTML;
+                        copyHtmlBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => {
+                            copyHtmlBtn.innerHTML = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy:', err);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
