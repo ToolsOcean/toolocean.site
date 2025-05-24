@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Converter Tool - Tools Ocean</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0084ff;
+            --primary-light: #66b3ff;
+            --primary-dark: #0066cc;
+            --white: #ffffff;
+            --light-gray: #f5f8ff;
+            --mid-gray: #e0e7ff;
+            --dark-gray: #718096;
+            --black: #1a202c;
+            --danger: #ff3b30;
+            --success: #34c759;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 132, 255, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .tool-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tool-body {
+            padding: 20px;
+        }
+
+        .gradient-preview {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--mid-gray);
+            background: linear-gradient(to right, #0084ff, #ffffff);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--mid-gray);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.2);
+        }
+
+        select {
+            cursor: pointer;
+            background-color: var(--white);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 8px;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-light {
+            background-color: var(--light-gray);
+            color: var(--black);
+        }
+
+        .btn-light:hover {
+            background-color: var(--mid-gray);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background-color: #e6352a;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background-color: #2eb251;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            min-width: auto;
+        }
+
+        .btn-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            padding: 0;
+            min-width: auto;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-stops {
+            margin-top: 20px;
+        }
+
+        .color-stop {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+        }
+
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid var(--mid-gray);
+            flex-shrink: 0;
+        }
+
+        .position-slider {
+            flex: 1;
+        }
+
+        .output-section {
+            margin-top: 30px;
+        }
+
+        .code-output {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            font-family: monospace;
+            position: relative;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px 0;
+            border-top: 1px solid var(--mid-gray);
+        }
+
+        .credits {
+            margin-top: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .social-links a {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-dark);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--success);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .made-in-india {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .gradient-preview {
+                height: 150px;
+            }
+
+            .color-stop {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .color-preview {
+                margin-bottom: 10px;
+            }
+
+            .button-group {
+                justify-content: space-between;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="notification" class="notification">Copied to clipboard!</div>
+    
+    <div class="container">
+        <header>
+            <h1>Gradient Converter Tool</h1>
+            <p>Create and customize CSS gradients with real-time preview</p>
+        </header>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <span>Gradient Generator</span>
+            </div>
+            
+            <div class="tool-body">
+                <div id="gradient-preview" class="gradient-preview"></div>
+                
+                <div class="control-group">
+                    <div class="control-title">Gradient Type</div>
+                    <div class="flex-row">
+                        <div class="form-group">
+                            <label for="gradient-type">Type</label>
+                            <select id="gradient-type" class="form-control">
+                                <option value="linear">Linear</option>
+                                <option value="radial">Radial</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="direction-group">
+                            <label for="gradient-direction">Direction</label>
+                            <select id="gradient-direction" class="form-control">
+                                <option value="to right">Left to Right</option>
+                                <option value="to left">Right to Left</option>
+                                <option value="to bottom">Top to Bottom</option>
+                                <option value="to top">Bottom to Top</option>
+                                <option value="to bottom right">Top Left to Bottom Right</option>
+                                <option value="to bottom left">Top Right to Bottom Left</option>
+                                <option value="to top right">Bottom Left to Top Right</option>
+                                <option value="to top left">Bottom Right to Top Left</option>
+                                <option value="custom">Custom Angle</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="angle-group" style="display: none;">
+                            <label for="gradient-angle">Angle (deg)</label>
+                            <input type="number" id="gradient-angle" class="form-control" value="90" min="0" max="360">
+                        </div>
+                        
+                        <div class="form-group" id="radial-shape-group" style="display: none;">
+                            <label for="radial-shape">Shape</label>
+                            <select id="radial-shape" class="form-control">
+                                <option value="circle">Circle</option>
+                                <option value="ellipse">Ellipse</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="radial-position-group" style="display: none;">
+                            <label for="radial-position">Position</label>
+                            <select id="radial-position" class="form-control">
+                                <option value="center">Center</option>
+                                <option value="top">Top</option>
+                                <option value="bottom">Bottom</option>
+                                <option value="left">Left</option>
+                                <option value="right">Right</option>
+                                <option value="top left">Top Left</option>
+                                <option value="top right">Top Right</option>
+                                <option value="bottom left">Bottom Left</option>
+                                <option value="bottom right">Bottom Right</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title">Color Stops</div>
+                    <div id="color-stops" class="color-stops">
+                        <!-- Color stops will be added here via JavaScript -->
+                    </div>
+                    <div class="button-group">
+                        <button id="add-stop" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Color Stop
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="output-section">
+                    <div class="control-title">CSS Code</div>
+                    <div class="code-output">
+                        <pre id="css-output">background: linear-gradient(to right, #0084ff, #ffffff);</pre>
+                        <button id="copy-css" class="copy-btn">Copy</button>
+                    </div>
+                    <div class="button-group">
+                        <button id="reset-tool" class="btn btn-light">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="credits">
+                <h3>Developed by MD Naeem Akhtar</h3>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/naeem_bhai_078/" target="_blank" title="Developer's Instagram">
+                        <i class="fab fa-instagram"></i> @naeem_bhai_078
+                    </a>
+                    <a href="https://www.instagram.com/toolsocean.site/" target="_blank" title="Brand Instagram">
+                        <i class="fab fa-instagram"></i> @toolsocean.site
+                    </a>
+                </div>
+                <div class="made-in-india">
+                    <span>Made in India</span>
+                    <span>🇮🇳</span>
+                </div>
+                <p>All rights reserved by Tools Ocean</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const gradientPreview = document.getElementById('gradient-preview');
+            const gradientTypeSelect = document.getElementById('gradient-type');
+            const gradientDirectionSelect = document.getElementById('gradient-direction');
+            const gradientAngleInput = document.getElementById('gradient-angle');
+            const directionGroup = document.getElementById('direction-group');
+            const angleGroup = document.getElementById('angle-group');
+            const radialShapeGroup = document.getElementById('radial-shape-group');
+            const radialPositionGroup = document.getElementById('radial-position-group');
+            const radialShapeSelect = document.getElementById('radial-shape');
+            const radialPositionSelect = document.getElementById('radial-position');
+            const colorStopsContainer = document.getElementById('color-stops');
+            const addStopButton = document.getElementById('add-stop');
+            const cssOutput = document.getElementById('css-output');
+            const copyButton = document.getElementById('copy-css');
+            const resetButton = document.getElementById('reset-tool');
+            const notification = document.getElementById('notification');
+
+            // Initial color stops
+            let colorStops = [
+                { color: '#0084ff', position: 0 },
+                { color: '#ffffff', position: 100 }
+            ];
+
+            // Initialize the tool
+            init();
+
+            function init() {
+                renderColorStops();
+                updateGradient();
+                setupEventListeners();
+            }
+
+            function renderColorStops() {
+                colorStopsContainer.innerHTML = '';
+                
+                colorStops.forEach((stop, index) => {
+                    const stopElement = document.createElement('div');
+                    stopElement.className = 'color-stop';
+                    stopElement.innerHTML = `
+                        <div class="color-preview" style="background-color: ${stop.color};"></div>
+                        <div class="form-group">
+                            <label for="color-${index}">Color</label>
+                            <input type="text" id="color-${index}" class="color-input form-control" value="${stop.color}" 
+                                data-index="${index}" placeholder="HEX, RGB, or HSL">
+                        </div>
+                        <div class="form-group">
+                            <label for="position-${index}">Position</label>
+                            <input type="range" id="position-${index}" class="position-slider form-control" 
+                                value="${stop.position}" min="0" max="100" data-index="${index}">
+                            <span class="position-value">${stop.position}%</span>
+                        </div>
+                        ${colorStops.length > 2 ? 
+                            `<button class="btn btn-danger btn-sm remove-stop" data-index="${index}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>` : ''}
+                    `;
+                    colorStopsContainer.appendChild(stopElement);
+                    
+                    // Add event listeners for the new elements
+                    const colorInput = stopElement.querySelector('.color-input');
+                    const positionSlider = stopElement.querySelector('.position-slider');
+                    const positionValue = stopElement.querySelector('.position-value');
+                    const removeButton = stopElement.querySelector('.remove-stop');
+                    
+                    colorInput.addEventListener('input', function() {
+                        const index = parseInt(this.dataset.index);
+                        colorStops[index].color = this.value;
+                        stopElement.querySelector('.color-preview').style.backgroundColor = this.value;
+                        updateGradient();
+                    });
+                    
+                    positionSlider.addEventListener('input', function() {
+                        const index = parseInt(this.dataset.index);
+                        colorStops[index].position = parseInt(this.value);
+                        positionValue.textContent = `${this.value}%`;
+                        updateGradient();
+                    });
+                    
+                    if (removeButton) {
+                        removeButton.addEventListener('click', function() {
+                            const index = parseInt(this.dataset.index);
+                            colorStops.splice(index, 1);
+                            renderColorStops();
+                            updateGradient();
+                        });
+                    }
+                });
+            }
+
+            function setupEventListeners() {
+                gradientTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'linear') {
+                        directionGroup.style.display = 'block';
+                        radialShapeGroup.style.display = 'none';
+                        radialPositionGroup.style.display = 'none';
+                        if (gradientDirectionSelect.value === 'custom') {
+                            angleGroup.style.display = 'block';
+                        } else {
+                            angleGroup.style.display = 'none';
+                        }
+                    } else {
+                        directionGroup.style.display = 'none';
+                        angleGroup.style.display = 'none';
+                        radialShapeGroup.style.display = 'block';
+                        radialPositionGroup.style.display = 'block';
+                    }
+                    updateGradient();
+                });
+                
+                gradientDirectionSelect.addEventListener('change', function() {
+                    if (this.value === 'custom') {
+                        angleGroup.style.display = 'block';
+                    } else {
+                        angleGroup.style.display = 'none';
+                    }
+                    updateGradient();
+                });
+                
+                gradientAngleInput.addEventListener('input', updateGradient);
+                radialShapeSelect.addEventListener('change', updateGradient);
+                radialPositionSelect.addEventListener('change', updateGradient);
+                
+                addStopButton.addEventListener('click', function() {
+                    // Find a color between the last two stops
+                    const lastStop = colorStops[colorStops.length - 1];
+                    const secondLastStop = colorStops[colorStops.length - 2];
+                    
+                    // Simple color interpolation (not perfect but works for demo)
+                    const newColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                    const newPosition = Math.floor((lastStop.position + secondLastStop.position) / 2);
+                    
+                    colorStops.splice(colorStops.length - 1, 0, { color: newColor, position: newPosition });
+                    renderColorStops();
+                    updateGradient();
+                });
+                
+                copyButton.addEventListener('click', function() {
+                    const textToCopy = cssOutput.textContent;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showNotification('Copied to clipboard!');
+                    }).catch(err => {
+                        showNotification('Failed to copy!', true);
+                        console.error('Could not copy text: ', err);
+                    });
+                });
+                
+                resetButton.addEventListener('click', function() {
+                    colorStops = [
+                        { color: '#0084ff', position: 0 },
+                        { color: '#ffffff', position: 100 }
+                    ];
+                    gradientTypeSelect.value = 'linear';
+                    gradientDirectionSelect.value = 'to right';
+                    gradientAngleInput.value = 90;
+                    radialShapeSelect.value = 'circle';
+                    radialPositionSelect.value = 'center';
+                    
+                    // Update UI
+                    directionGroup.style.display = 'block';
+                    angleGroup.style.display = 'none';
+                    radialShapeGroup.style.display = 'none';
+                    radialPositionGroup.style.display = 'none';
+                    
+                    renderColorStops();
+                    updateGradient();
+                });
+            }
+
+            function updateGradient() {
+                // Sort color stops by position
+                colorStops.sort((a, b) => a.position - b.position);
+                
+                // Generate CSS gradient string based on type
+                let gradientCSS;
+                
+                if (gradientTypeSelect.value === 'linear') {
+                    let direction;
+                    if (gradientDirectionSelect.value === 'custom') {
+                        direction = `${gradientAngleInput.value}deg`;
+                    } else {
+                        direction = gradientDirectionSelect.value;
+                    }
+                    
+                    gradientCSS = `linear-gradient(${direction}, ${colorStops.map(stop => `${stop.color} ${stop.position}%`).join(', ')})`;
+                } else {
+                    // Radial gradient
+                    const shape = radialShapeSelect.value;
+                    const position = radialPositionSelect.value;
+                    
+                    gradientCSS = `radial-gradient(${shape} at ${position}, ${colorStops.map(stop => `${stop.color} ${stop.position}%`).join(', ')})`;
+                }
+                
+                // Apply gradient to preview
+                gradientPreview.style.background = gradientCSS;
+                
+                // Update CSS output
+                cssOutput.textContent = `background: ${gradientCSS};`;
+            }
+
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.style.backgroundColor = isError ? '#ff3b30' : '#34c759';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
