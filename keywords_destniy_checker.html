@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyword Density Checker - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        .bg-ocean-blue {
+            background-color: #0078ff;
+        }
+        .text-ocean-blue {
+            color: #0078ff;
+        }
+        .border-ocean-blue {
+            border-color: #0078ff;
+        }
+        .hover\:bg-ocean-blue-dark:hover {
+            background-color: #0060cc;
+        }
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0078ff, #00a1ff);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        @media (max-width: 640px) {
+            .xs\:text-sm {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header Section -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-ocean-blue mb-2">Keyword Density Checker</h1>
+            <p class="text-gray-600">Analyze the frequency and density of keywords in your content</p>
+        </header>
+
+        <!-- Main Tool Area -->
+        <main class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="mb-6">
+                <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Paste your content here:</label>
+                <textarea id="content" class="w-full h-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean-blue" placeholder="Enter your text here to analyze keyword density..."></textarea>
+            </div>
+
+            <div class="flex flex-wrap -mx-2 mb-6">
+                <div class="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                    <div class="flex items-center mb-4">
+                        <input id="excludeStopWords" type="checkbox" checked class="h-4 w-4 text-ocean-blue focus:ring-ocean-blue border-gray-300 rounded">
+                        <label for="excludeStopWords" class="ml-2 block text-gray-700">Exclude common stop words</label>
+                        <button id="infoBtn" class="ml-2 text-gray-500 hover:text-ocean-blue focus:outline-none" title="Stop words are common words like 'the', 'and', 'a' that are typically filtered out">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 px-2">
+                    <div class="flex flex-col mb-4">
+                        <label for="minWordLength" class="block text-gray-700 text-sm font-bold mb-2">Minimum word length: <span id="minWordLengthValue">3</span></label>
+                        <input id="minWordLength" type="range" min="1" max="10" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-2">
+                <div class="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                    <button id="analyzeBtn" class="w-full bg-ocean-blue hover:bg-ocean-blue-dark text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-chart-bar mr-2"></i> Analyze Text
+                    </button>
+                </div>
+                <div class="w-full md:w-1/2 px-2">
+                    <button id="resetBtn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-200">
+                        <i class="fas fa-redo mr-2"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Results Section (Hidden by Default) -->
+        <section id="results" class="bg-white rounded-lg shadow-lg p-6 mb-8 hidden">
+            <h2 class="text-xl font-bold text-ocean-blue mb-4">Keyword Analysis Results</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-700 mb-1">Total Words</h3>
+                    <p id="totalWords" class="text-2xl font-bold text-ocean-blue">0</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-700 mb-1">Unique Words</h3>
+                    <p id="uniqueWords" class="text-2xl font-bold text-ocean-blue">0</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-700 mb-1">Keyword Richness</h3>
+                    <p id="keywordRichness" class="text-2xl font-bold text-ocean-blue">0%</p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="keywordFilter" class="block text-gray-700 text-sm font-bold mb-2">Filter results:</label>
+                <input type="text" id="keywordFilter" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean-blue" placeholder="Type to filter keywords...">
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4 bg-blue-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Rank</th>
+                            <th class="py-3 px-4 bg-blue-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Keyword</th>
+                            <th class="py-3 px-4 bg-blue-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Count</th>
+                            <th class="py-3 px-4 bg-blue-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Density</th>
+                            <th class="py-3 px-4 bg-blue-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Distribution</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTable">
+                        <!-- Results will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-6">
+                <button id="exportBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200">
+                    <i class="fas fa-download mr-2"></i> Export Results (CSV)
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer with Attribution -->
+        <footer class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-ocean-blue">
+                        <img src="https://page1.genspark.site/v1/base64_upload/ff62613fc936f7e7939c33e1bc984c5f" alt="MD Naeem Akhtar" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <p class="font-medium">Created by <span class="font-bold text-ocean-blue">MD Naeem Akhtar</span></p>
+                        <p class="text-sm text-gray-600">Follow on Instagram: <a href="https://instagram.com/naeem_bhai_078" class="text-ocean-blue hover:underline" target="_blank">@naeem_bhai_078</a></p>
+                    </div>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-sm text-gray-600">All rights reserved by Tools Ocean</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Common English stop words
+        const stopWords = ['a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'aren\'t', 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can\'t', 'cannot', 'could', 'couldn\'t', 'did', 'didn\'t', 'do', 'does', 'doesn\'t', 'doing', 'don\'t', 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn\'t', 'has', 'hasn\'t', 'have', 'haven\'t', 'having', 'he', 'he\'d', 'he\'ll', 'he\'s', 'her', 'here', 'here\'s', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'how\'s', 'i', 'i\'d', 'i\'ll', 'i\'m', 'i\'ve', 'if', 'in', 'into', 'is', 'isn\'t', 'it', 'it\'s', 'its', 'itself', 'let\'s', 'me', 'more', 'most', 'mustn\'t', 'my', 'myself', 'no', 'nor', 'not', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'ought', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 'same', 'shan\'t', 'she', 'she\'d', 'she\'ll', 'she\'s', 'should', 'shouldn\'t', 'so', 'some', 'such', 'than', 'that', 'that\'s', 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'there\'s', 'these', 'they', 'they\'d', 'they\'ll', 'they\'re', 'they\'ve', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was', 'wasn\'t', 'we', 'we\'d', 'we\'ll', 'we\'re', 'we\'ve', 'were', 'weren\'t', 'what', 'what\'s', 'when', 'when\'s', 'where', 'where\'s', 'which', 'while', 'who', 'who\'s', 'whom', 'why', 'why\'s', 'with', 'won\'t', 'would', 'wouldn\'t', 'you', 'you\'d', 'you\'ll', 'you\'re', 'you\'ve', 'your', 'yours', 'yourself', 'yourselves'];
+
+        // DOM Elements
+        const contentTextarea = document.getElementById('content');
+        const excludeStopWordsCheckbox = document.getElementById('excludeStopWords');
+        const minWordLengthInput = document.getElementById('minWordLength');
+        const minWordLengthValue = document.getElementById('minWordLengthValue');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resultsSection = document.getElementById('results');
+        const totalWordsElement = document.getElementById('totalWords');
+        const uniqueWordsElement = document.getElementById('uniqueWords');
+        const keywordRichnessElement = document.getElementById('keywordRichness');
+        const resultsTable = document.getElementById('resultsTable');
+        const exportBtn = document.getElementById('exportBtn');
+        const keywordFilter = document.getElementById('keywordFilter');
+        const infoBtn = document.getElementById('infoBtn');
+
+        // Update the minimum word length value display
+        minWordLengthInput.addEventListener('input', () => {
+            minWordLengthValue.textContent = minWordLengthInput.value;
+        });
+
+        // Show info tooltip on hover
+        infoBtn.addEventListener('mouseover', (e) => {
+            const tooltip = document.createElement('div');
+            tooltip.id = 'infoTooltip';
+            tooltip.className = 'absolute bg-gray-800 text-white p-2 rounded shadow-lg z-10 text-xs max-w-xs';
+            tooltip.innerHTML = 'Stop words are common words like "the", "and", "a", etc. that are typically filtered out in keyword analysis because they appear frequently but add little value to content analysis.';
+            tooltip.style.top = (e.target.getBoundingClientRect().bottom + 5) + 'px';
+            tooltip.style.left = (e.target.getBoundingClientRect().left - 100) + 'px';
+            document.body.appendChild(tooltip);
+        });
+
+        infoBtn.addEventListener('mouseout', () => {
+            const tooltip = document.getElementById('infoTooltip');
+            if (tooltip) tooltip.remove();
+        });
+
+        // Reset the form
+        resetBtn.addEventListener('click', () => {
+            contentTextarea.value = '';
+            excludeStopWordsCheckbox.checked = true;
+            minWordLengthInput.value = 3;
+            minWordLengthValue.textContent = '3';
+            resultsSection.classList.add('hidden');
+            keywordFilter.value = '';
+        });
+
+        // Analyze the text
+        analyzeBtn.addEventListener('click', () => {
+            const content = contentTextarea.value.trim();
+            
+            if (!content) {
+                alert('Please enter some text to analyze.');
+                return;
+            }
+
+            const excludeStopWords = excludeStopWordsCheckbox.checked;
+            const minLength = parseInt(minWordLengthInput.value, 10);
+            
+            analyzeText(content, excludeStopWords, minLength);
+        });
+
+        // Filter keywords
+        keywordFilter.addEventListener('input', () => {
+            const filterText = keywordFilter.value.toLowerCase();
+            const rows = resultsTable.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const keyword = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                if (keyword.includes(filterText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Export results as CSV
+        exportBtn.addEventListener('click', () => {
+            // Get table data
+            const rows = Array.from(resultsTable.querySelectorAll('tr'));
+            let csvContent = 'Rank,Keyword,Count,Density\n';
+            
+            rows.forEach(row => {
+                const rank = row.querySelector('td:nth-child(1)').textContent;
+                const keyword = row.querySelector('td:nth-child(2)').textContent;
+                const count = row.querySelector('td:nth-child(3)').textContent;
+                const density = row.querySelector('td:nth-child(4)').textContent;
+                
+                csvContent += `${rank},"${keyword}",${count},${density}\n`;
+            });
+            
+            // Create download link
+            const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'keyword_density_analysis.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        function analyzeText(content, excludeStopWords, minLength) {
+            // Convert to lowercase and split into words
+            const words = content.toLowerCase().match(/\b(\w+)\b/g) || [];
+            
+            // Copy of all words for context analysis
+            const allWords = [...words];
+            
+            // Filter words based on minimum length and stop words if selected
+            const filteredWords = words.filter(word => {
+                if (word.length < minLength) return false;
+                if (excludeStopWords && stopWords.includes(word)) return false;
+                return true;
+            });
+
+            // Count word frequencies
+            const wordCounts = {};
+            filteredWords.forEach(word => {
+                wordCounts[word] = (wordCounts[word] || 0) + 1;
+            });
+
+            // Sort words by frequency
+            const sortedWords = Object.keys(wordCounts).sort((a, b) => wordCounts[b] - wordCounts[a]);
+
+            // Update statistics
+            const totalWordsCount = filteredWords.length;
+            const uniqueWordsCount = sortedWords.length;
+            const keywordRichness = totalWordsCount > 0 ? ((uniqueWordsCount / totalWordsCount) * 100).toFixed(2) : 0;
+            
+            totalWordsElement.textContent = totalWordsCount;
+            uniqueWordsElement.textContent = uniqueWordsCount;
+            keywordRichnessElement.textContent = keywordRichness + '%';
+
+            // Clear previous results
+            resultsTable.innerHTML = '';
+
+            // Display results
+            sortedWords.forEach((word, index) => {
+                const count = wordCounts[word];
+                const density = ((count / totalWordsCount) * 100).toFixed(2);
+                const distributionPercentage = Math.min(100, parseFloat(density) * 5); // Scale for visualization
+                
+                const row = document.createElement('tr');
+                row.className = index % 2 === 0 ? 'bg-white hover:bg-blue-50' : 'bg-gray-50 hover:bg-blue-50';
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4 border-b border-gray-200">${index + 1}</td>
+                    <td class="py-3 px-4 border-b border-gray-200 font-medium">${word}</td>
+                    <td class="py-3 px-4 border-b border-gray-200">${count}</td>
+                    <td class="py-3 px-4 border-b border-gray-200">${density}%</td>
+                    <td class="py-3 px-4 border-b border-gray-200 w-1/5">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${distributionPercentage}%"></div>
+                        </div>
+                    </td>
+                `;
+                
+                resultsTable.appendChild(row);
+            });
+
+            // Show results section
+            resultsSection.classList.remove('hidden');
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
