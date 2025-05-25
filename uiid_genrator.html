@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UUID Generator Tool - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0074D9;
+            --secondary-blue: #0056a3;
+            --light-blue: #f0f8ff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: white;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            flex: 1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin: 1.5rem auto;
+            padding: 2rem;
+            max-width: 800px;
+            transition: all 0.3s ease;
+        }
+        
+        .tool-container:hover {
+            box-shadow: 0 0 30px rgba(0, 116, 217, 0.2);
+        }
+        
+        .result-box {
+            background-color: var(--light-blue);
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            font-size: 1.2rem;
+            word-break: break-all;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn i {
+            margin-right: 0.5rem;
+        }
+        
+        .btn-clear {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-clear:hover {
+            background-color: #d0d0d0;
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            text-align: center;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+        
+        .footer img {
+            border-radius: 50%;
+            border: 3px solid white;
+            max-width: 100px;
+            margin: 0 auto 1rem auto;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast i {
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 640px) {
+            .options {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <header class="header">
+            <h1 class="text-3xl font-bold mb-2">UUID Generator</h1>
+            <p class="opacity-90">Generate unique universal identifiers with a single click</p>
+        </header>
+        
+        <main class="tool-container">
+            <div class="mb-5">
+                <h2 class="text-xl font-bold text-gray-700 mb-2">Generate UUID v4</h2>
+                <p class="text-gray-600">Create universally unique identifiers based on RFC 4122 standard.</p>
+            </div>
+            
+            <div class="result-box" id="uuid-result">
+                Click "Generate UUID" to create a new UUID
+            </div>
+            
+            <div class="options">
+                <button id="generate-btn" class="btn" onclick="generateUUID()">
+                    <i class="fas fa-cog"></i> Generate UUID
+                </button>
+                <button id="copy-btn" class="btn" onclick="copyToClipboard()">
+                    <i class="fas fa-copy"></i> Copy to Clipboard
+                </button>
+                <button id="clear-btn" class="btn btn-clear" onclick="clearUUID()">
+                    <i class="fas fa-trash-alt"></i> Clear
+                </button>
+            </div>
+            
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-lg font-bold text-gray-700 mb-2">What is a UUID?</h3>
+                <p class="text-gray-600 mb-2">
+                    A Universally Unique Identifier (UUID) is a 128-bit label used to identify information 
+                    in computer systems. UUIDs are standardized by the Open Software Foundation (OSF).
+                </p>
+                <p class="text-gray-600 mb-2">
+                    UUIDs are typically displayed as 32 hexadecimal digits, separated by hyphens into five groups: 
+                    8-4-4-4-12 (a total of 36 characters including hyphens).
+                </p>
+                <p class="text-gray-600">
+                    Example: 123e4567-e89b-12d3-a456-426614174000
+                </p>
+            </div>
+        </main>
+        
+        <div class="toast" id="toast">
+            <i class="fas fa-check-circle"></i>
+            <span id="toast-message">UUID copied to clipboard!</span>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="mx-auto max-w-5xl">
+            <img src="https://page1.genspark.site/v1/base64_upload/c20e98174aeb755d14b4daa18e25ce12" alt="MD Naeem Akhtar" class="mx-auto">
+            <div class="mt-4">
+                <p class="font-bold text-xl">Credits</p>
+                <p class="mt-2">MD Naeem Akhtar</p>
+                <p class="mt-2">
+                    Follow us on Instagram: 
+                    <a href="https://www.instagram.com/naeem_bhai_078" target="_blank">@naeem_bhai_078</a>
+                </p>
+                <p class="mt-4 text-sm opacity-80">All rights reserved by Tools Ocean</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function generateUUID() {
+            // RFC4122 compliant UUID v4 implementation
+            const uuid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+            
+            document.getElementById('uuid-result').textContent = uuid;
+            document.getElementById('uuid-result').classList.add('font-bold');
+        }
+        
+        function copyToClipboard() {
+            const uuidResult = document.getElementById('uuid-result');
+            const uuid = uuidResult.textContent;
+            
+            if (uuid && uuid !== 'Click "Generate UUID" to create a new UUID') {
+                navigator.clipboard.writeText(uuid)
+                    .then(() => {
+                        showToast('UUID copied to clipboard!');
+                    })
+                    .catch(err => {
+                        showToast('Failed to copy UUID!', true);
+                        console.error('Could not copy text: ', err);
+                    });
+            } else {
+                showToast('Generate a UUID first!', true);
+            }
+        }
+        
+        function clearUUID() {
+            document.getElementById('uuid-result').textContent = 'Click "Generate UUID" to create a new UUID';
+            document.getElementById('uuid-result').classList.remove('font-bold');
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            
+            if (isError) {
+                toast.style.backgroundColor = '#e53e3e';
+                toast.querySelector('i').className = 'fas fa-exclamation-circle';
+            } else {
+                toast.style.backgroundColor = 'var(--primary-blue)';
+                toast.querySelector('i').className = 'fas fa-check-circle';
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Generate a UUID automatically when the page loads
+        window.onload = generateUUID;
+    </script>
+</body>
+</html>
