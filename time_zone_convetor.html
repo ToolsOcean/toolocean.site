@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Zone Converter - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0078ff;
+            --secondary-blue: #0056b3;
+            --white: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-blue);
+        }
+        .header-bg {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #00c6ff 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .time-display {
+            background-color: rgba(0, 120, 255, 0.1);
+            border-left: 4px solid var(--primary-blue);
+        }
+        .profile-img {
+            border: 3px solid var(--primary-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-bg text-white py-8 px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold text-center">Time Zone Converter</h1>
+            <p class="text-center mt-2">Convert times between different time zones instantly</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg card-shadow p-6 max-w-3xl mx-auto">
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Time Zone Converter</h2>
+                <p class="text-gray-600 mb-6">Select your time zones and enter the time you want to convert.</p>
+                
+                <!-- Time Zone Selectors -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="fromTimezone" class="block text-sm font-medium text-gray-700 mb-2">From Time Zone:</label>
+                        <select id="fromTimezone" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- Will be populated with JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="toTimezone" class="block text-sm font-medium text-gray-700 mb-2">To Time Zone:</label>
+                        <select id="toTimezone" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- Will be populated with JavaScript -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date and Time Input -->
+                <div class="mb-6">
+                    <label for="dateTime" class="block text-sm font-medium text-gray-700 mb-2">Date and Time:</label>
+                    <input type="datetime-local" id="dateTime" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-wrap justify-between gap-4 mb-6">
+                    <button id="convertBtn" class="btn-primary px-6 py-3 rounded-md font-medium flex items-center">
+                        <i class="fas fa-sync-alt mr-2"></i> Convert
+                    </button>
+                    <button id="resetBtn" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-md font-medium hover:bg-gray-300 transition flex items-center">
+                        <i class="fas fa-undo mr-2"></i> Reset
+                    </button>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultSection" class="time-display p-4 rounded-md hidden">
+                    <h3 class="font-semibold text-gray-800 mb-2">Converted Time:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">From:</p>
+                            <p id="fromTime" class="text-lg font-medium text-blue-600"></p>
+                            <p id="fromZone" class="text-sm text-gray-500"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">To:</p>
+                            <p id="toTime" class="text-lg font-medium text-blue-600"></p>
+                            <p id="toZone" class="text-sm text-gray-500"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Features -->
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="font-semibold text-gray-800 mb-3">Popular Time Zone Pairs</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <button class="timezone-pair bg-gray-100 p-2 rounded text-sm hover:bg-gray-200" data-from="America/New_York" data-to="America/Los_Angeles">
+                        New York → Los Angeles
+                    </button>
+                    <button class="timezone-pair bg-gray-100 p-2 rounded text-sm hover:bg-gray-200" data-from="America/New_York" data-to="Europe/London">
+                        New York → London
+                    </button>
+                    <button class="timezone-pair bg-gray-100 p-2 rounded text-sm hover:bg-gray-200" data-from="Asia/Tokyo" data-to="America/New_York">
+                        Tokyo → New York
+                    </button>
+                    <button class="timezone-pair bg-gray-100 p-2 rounded text-sm hover:bg-gray-200" data-from="Europe/London" data-to="Asia/Singapore">
+                        London → Singapore
+                    </button>
+                    <button class="timezone-pair bg-gray-100 p-2 rounded text-sm hover:bg-gray-200" data-from="Asia/Kolkata" data-to="America/Los_Angeles">
+                        India → Los Angeles
+                    </button>
+                    <button class="timezone-pair bg-gray-100 p-2 rounded text-sm hover:bg-gray-200" data-from="Australia/Sydney" data-to="Europe/Berlin">
+                        Sydney → Berlin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white py-8 px-4 mt-10">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="mb-6 md:mb-0 text-center md:text-left">
+                    <h3 class="text-xl font-bold mb-2">Tools Ocean</h3>
+                    <p class="text-gray-400">Time Zone Converter Tool</p>
+                    <p class="text-gray-400 mt-2">Made in India</p>
+                    <p class="text-gray-400 mt-1">All rights reserved by Tools Ocean</p>
+                </div>
+                
+                <div class="text-center mb-6 md:mb-0">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-24 h-24 rounded-full overflow-hidden profile-img">
+                            <!-- Using the image from the message history -->
+                            <img src="https://page1.genspark.site/v1/base64_upload/ff62613fc936f7e7939c33e1bc984c5f" alt="Profile" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <h4 class="font-medium">MD Naeem Akhtar</h4>
+                    <p class="text-sm text-gray-400">Developer</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <h4 class="font-medium mb-3">Follow Us</h4>
+                    <div class="flex justify-center md:justify-end space-x-4">
+                        <a href="https://instagram.com/naeem_bhai_078" class="text-2xl hover:text-blue-400" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-2xl hover:text-blue-400">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="text-2xl hover:text-blue-400">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Time zones list
+            const timeZones = [
+                "Africa/Abidjan", "Africa/Accra", "Africa/Algiers", "Africa/Cairo", "Africa/Casablanca", "Africa/Johannesburg", "Africa/Lagos", "Africa/Nairobi",
+                "America/Argentina/Buenos_Aires", "America/Bogota", "America/Chicago", "America/Denver", "America/Halifax", "America/Los_Angeles", "America/Mexico_City", "America/New_York", "America/Phoenix", "America/Sao_Paulo", "America/Toronto", "America/Vancouver",
+                "Asia/Bangkok", "Asia/Dhaka", "Asia/Dubai", "Asia/Ho_Chi_Minh", "Asia/Hong_Kong", "Asia/Jakarta", "Asia/Jerusalem", "Asia/Karachi", "Asia/Kolkata", "Asia/Kuala_Lumpur", "Asia/Manila", "Asia/Seoul", "Asia/Shanghai", "Asia/Singapore", "Asia/Taipei", "Asia/Tokyo",
+                "Australia/Brisbane", "Australia/Melbourne", "Australia/Perth", "Australia/Sydney",
+                "Europe/Amsterdam", "Europe/Athens", "Europe/Berlin", "Europe/Dublin", "Europe/Istanbul", "Europe/London", "Europe/Madrid", "Europe/Moscow", "Europe/Paris", "Europe/Rome", "Europe/Stockholm", "Europe/Zurich",
+                "Pacific/Auckland", "Pacific/Fiji", "Pacific/Honolulu"
+            ];
+
+            // Populate time zone selectors
+            const fromTimezone = document.getElementById('fromTimezone');
+            const toTimezone = document.getElementById('toTimezone');
+            
+            timeZones.forEach(zone => {
+                const fromOption = document.createElement('option');
+                fromOption.value = zone;
+                fromOption.textContent = formatTimeZoneName(zone);
+                fromTimezone.appendChild(fromOption);
+                
+                const toOption = document.createElement('option');
+                toOption.value = zone;
+                toOption.textContent = formatTimeZoneName(zone);
+                toTimezone.appendChild(toOption);
+            });
+            
+            // Set default time zones
+            fromTimezone.value = 'Asia/Kolkata';
+            toTimezone.value = 'America/New_York';
+            
+            // Set default date and time (current time)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            document.getElementById('dateTime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            // Convert button click event
+            document.getElementById('convertBtn').addEventListener('click', convertTime);
+            
+            // Reset button click event
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                document.getElementById('dateTime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                document.getElementById('resultSection').classList.add('hidden');
+            });
+            
+            // Timezone pair buttons
+            const timezonePairs = document.querySelectorAll('.timezone-pair');
+            timezonePairs.forEach(button => {
+                button.addEventListener('click', function() {
+                    fromTimezone.value = this.getAttribute('data-from');
+                    toTimezone.value = this.getAttribute('data-to');
+                    convertTime();
+                });
+            });
+            
+            // Function to convert time between time zones
+            function convertTime() {
+                const dateTimeStr = document.getElementById('dateTime').value;
+                if (!dateTimeStr) {
+                    alert('Please select a date and time');
+                    return;
+                }
+                
+                const fromZoneStr = document.getElementById('fromTimezone').value;
+                const toZoneStr = document.getElementById('toTimezone').value;
+                
+                try {
+                    // Parse the datetime input
+                    const dateTime = new Date(dateTimeStr);
+                    
+                    // Format the "from" time
+                    const fromOptions = {
+                        timeZone: fromZoneStr,
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    };
+                    const fromFormatted = dateTime.toLocaleString('en-US', fromOptions);
+                    
+                    // Convert to the "to" time zone
+                    const toOptions = {
+                        timeZone: toZoneStr,
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    };
+                    const toFormatted = dateTime.toLocaleString('en-US', toOptions);
+                    
+                    // Update the result section
+                    document.getElementById('fromTime').textContent = fromFormatted;
+                    document.getElementById('fromZone').textContent = formatTimeZoneName(fromZoneStr);
+                    document.getElementById('toTime').textContent = toFormatted;
+                    document.getElementById('toZone').textContent = formatTimeZoneName(toZoneStr);
+                    
+                    // Show the result section
+                    document.getElementById('resultSection').classList.remove('hidden');
+                    
+                } catch (error) {
+                    alert('Error converting time: ' + error.message);
+                }
+            }
+            
+            // Format time zone name for display
+            function formatTimeZoneName(zoneName) {
+                return zoneName.replace('_', ' ').replace('/', ': ');
+            }
+        });
+    </script>
+</body>
+</html>
