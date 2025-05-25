@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter - Tools Ocean</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0088ff;
+            --secondary-blue: #0066cc;
+            --light-blue: #e6f3ff;
+            --white: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--white);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border-radius: 10px 10px 0 0;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .converter-card {
+            background-color: var(--white);
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--light-blue);
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+        }
+        .btn {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: var(--secondary-blue);
+        }
+        .results-container {
+            background-color: var(--light-blue);
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-blue);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .social-links a {
+            color: var(--primary-blue);
+            margin: 0 10px;
+            font-size: 1.2rem;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+            .header {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="text-2xl font-bold mb-2">Unit Converter Tool</h1>
+            <p class="text-sm">Convert between various units instantly</p>
+        </div>
+        
+        <div class="converter-card">
+            <div class="form-group">
+                <label for="category" class="block text-gray-700 mb-2">Select Category:</label>
+                <select id="category" class="form-control" onchange="updateUnitOptions()">
+                    <option value="length">Length</option>
+                    <option value="weight">Weight/Mass</option>
+                    <option value="temperature">Temperature</option>
+                    <option value="volume">Volume</option>
+                    <option value="area">Area</option>
+                    <option value="time">Time</option>
+                    <option value="speed">Speed</option>
+                    <option value="pressure">Pressure</option>
+                    <option value="energy">Energy</option>
+                    <option value="digital">Digital Storage</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label for="fromUnit" class="block text-gray-700 mb-2">From:</label>
+                    <select id="fromUnit" class="form-control" onchange="convert()"></select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="toUnit" class="block text-gray-700 mb-2">To:</label>
+                    <select id="toUnit" class="form-control" onchange="convert()"></select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label for="fromValue" class="block text-gray-700 mb-2">Value:</label>
+                    <input type="number" id="fromValue" class="form-control" placeholder="Enter value" oninput="convert()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="toValue" class="block text-gray-700 mb-2">Result:</label>
+                    <input type="number" id="toValue" class="form-control" placeholder="Converted result" readonly>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-4">
+                <button class="btn" onclick="swapUnits()">
+                    <i class="fas fa-exchange-alt mr-2"></i> Swap
+                </button>
+                <div>
+                    <button class="btn mr-2" id="metricBtn" onclick="setSystem('metric')">Metric</button>
+                    <button class="btn" id="imperialBtn" onclick="setSystem('imperial')">Imperial</button>
+                </div>
+                <button class="btn bg-red-500 hover:bg-red-600" onclick="resetAll()">Clear All</button>
+            </div>
+            
+            <div class="results-container mt-6">
+                <h3 class="font-bold mb-3">Common Conversions:</h3>
+                <div id="commonResults"></div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6 text-center">
+            <div class="flex justify-center mb-4">
+                <img src="https://page1.genspark.site/v1/base64_upload/ff62613fc936f7e7939c33e1bc984c5f" alt="Creator" class="profile-pic">
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">MD Naeem Akhtar</h3>
+            <p class="text-gray-600 mb-3">Creator of Tools Ocean</p>
+            <div class="social-links mb-3">
+                <a href="https://instagram.com/naeem_bhai_078" target="_blank">
+                    <i class="fab fa-instagram"></i> @naeem_bhai_078
+                </a>
+            </div>
+            <div class="flex items-center justify-center">
+                <span class="mr-2">Made in India</span>
+                <span>🇮🇳</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>All rights reserved by Tools Ocean © 2023</p>
+        </div>
+    </div>
+    
+    <script>
+        // Unit conversion data
+        const unitData = {
+            length: {
+                meter: 1,
+                kilometer: 0.001,
+                centimeter: 100,
+                millimeter: 1000,
+                inch: 39.3701,
+                foot: 3.28084,
+                yard: 1.09361,
+                mile: 0.000621371
+            },
+            weight: {
+                gram: 1,
+                kilogram: 0.001,
+                milligram: 1000,
+                pound: 0.00220462,
+                ounce: 0.035274,
+                ton: 0.000001,
+                stone: 0.000157473
+            },
+            temperature: {
+                celsius: 'special',
+                fahrenheit: 'special',
+                kelvin: 'special'
+            },
+            volume: {
+                liter: 1,
+                milliliter: 1000,
+                cubicMeter: 0.001,
+                gallon: 0.264172,
+                quart: 1.05669,
+                pint: 2.11338,
+                cup: 4.22675,
+                fluidOunce: 33.814
+            },
+            area: {
+                squareMeter: 1,
+                squareKilometer: 0.000001,
+                squareCentimeter: 10000,
+                squareMillimeter: 1000000,
+                squareInch: 1550,
+                squareFoot: 10.7639,
+                squareYard: 1.19599,
+                acre: 0.000247105,
+                hectare: 0.0001
+            },
+            time: {
+                second: 1,
+                minute: 1/60,
+                hour: 1/3600,
+                day: 1/86400,
+                week: 1/604800,
+                month: 1/2592000,
+                year: 1/31536000
+            },
+            speed: {
+                meterPerSecond: 1,
+                kilometerPerHour: 3.6,
+                milePerHour: 2.23694,
+                knot: 1.94384,
+                footPerSecond: 3.28084
+            },
+            pressure: {
+                pascal: 1,
+                kilopascal: 0.001,
+                bar: 0.00001,
+                psi: 0.000145038,
+                atmosphere: 0.00000986923
+            },
+            energy: {
+                joule: 1,
+                kilojoule: 0.001,
+                calorie: 0.239006,
+                kilocalorie: 0.000239006,
+                wattHour: 0.000277778,
+                kilowattHour: 0.000000277778
+            },
+            digital: {
+                byte: 1,
+                kilobyte: 0.001,
+                megabyte: 0.000001,
+                gigabyte: 0.000000001,
+                terabyte: 0.000000000001,
+                bit: 8,
+                kilobit: 0.008,
+                megabit: 0.000008
+            }
+        };
+        
+        // Unit display names
+        const unitDisplayNames = {
+            meter: "Meters (m)",
+            kilometer: "Kilometers (km)",
+            centimeter: "Centimeters (cm)",
+            millimeter: "Millimeters (mm)",
+            inch: "Inches (in)",
+            foot: "Feet (ft)",
+            yard: "Yards (yd)",
+            mile: "Miles (mi)",
+            gram: "Grams (g)",
+            kilogram: "Kilograms (kg)",
+            milligram: "Milligrams (mg)",
+            pound: "Pounds (lb)",
+            ounce: "Ounces (oz)",
+            ton: "Metric Tons (t)",
+            stone: "Stone (st)",
+            celsius: "Celsius (°C)",
+            fahrenheit: "Fahrenheit (°F)",
+            kelvin: "Kelvin (K)",
+            liter: "Liters (L)",
+            milliliter: "Milliliters (mL)",
+            cubicMeter: "Cubic Meters (m³)",
+            gallon: "Gallons (gal)",
+            quart: "Quarts (qt)",
+            pint: "Pints (pt)",
+            cup: "Cups",
+            fluidOunce: "Fluid Ounces (fl oz)",
+            squareMeter: "Square Meters (m²)",
+            squareKilometer: "Square Kilometers (km²)",
+            squareCentimeter: "Square Centimeters (cm²)",
+            squareMillimeter: "Square Millimeters (mm²)",
+            squareInch: "Square Inches (in²)",
+            squareFoot: "Square Feet (ft²)",
+            squareYard: "Square Yards (yd²)",
+            acre: "Acres",
+            hectare: "Hectares (ha)",
+            second: "Seconds (s)",
+            minute: "Minutes (min)",
+            hour: "Hours (hr)",
+            day: "Days",
+            week: "Weeks",
+            month: "Months",
+            year: "Years",
+            meterPerSecond: "Meters per Second (m/s)",
+            kilometerPerHour: "Kilometers per Hour (km/h)",
+            milePerHour: "Miles per Hour (mph)",
+            knot: "Knots (kn)",
+            footPerSecond: "Feet per Second (ft/s)",
+            pascal: "Pascals (Pa)",
+            kilopascal: "Kilopascals (kPa)",
+            bar: "Bars",
+            psi: "Pounds per Square Inch (psi)",
+            atmosphere: "Atmospheres (atm)",
+            joule: "Joules (J)",
+            kilojoule: "Kilojoules (kJ)",
+            calorie: "Calories (cal)",
+            kilocalorie: "Kilocalories (kcal)",
+            wattHour: "Watt-hours (Wh)",
+            kilowattHour: "Kilowatt-hours (kWh)",
+            byte: "Bytes (B)",
+            kilobyte: "Kilobytes (KB)",
+            megabyte: "Megabytes (MB)",
+            gigabyte: "Gigabytes (GB)",
+            terabyte: "Terabytes (TB)",
+            bit: "Bits (b)",
+            kilobit: "Kilobits (Kb)",
+            megabit: "Megabits (Mb)"
+        };
+        
+        // Systems classification
+        const unitSystems = {
+            metric: {
+                length: ["meter", "kilometer", "centimeter", "millimeter"],
+                weight: ["gram", "kilogram", "milligram", "ton"],
+                temperature: ["celsius", "kelvin"],
+                volume: ["liter", "milliliter", "cubicMeter"],
+                area: ["squareMeter", "squareKilometer", "squareCentimeter", "squareMillimeter", "hectare"],
+                time: ["second", "minute", "hour", "day", "week", "month", "year"],
+                speed: ["meterPerSecond", "kilometerPerHour"],
+                pressure: ["pascal", "kilopascal", "bar", "atmosphere"],
+                energy: ["joule", "kilojoule", "calorie", "kilocalorie", "wattHour", "kilowattHour"],
+                digital: ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte", "bit", "kilobit", "megabit"]
+            },
+            imperial: {
+                length: ["inch", "foot", "yard", "mile"],
+                weight: ["pound", "ounce", "stone"],
+                temperature: ["fahrenheit"],
+                volume: ["gallon", "quart", "pint", "cup", "fluidOunce"],
+                area: ["squareInch", "squareFoot", "squareYard", "acre"],
+                time: ["second", "minute", "hour", "day", "week", "month", "year"],
+                speed: ["milePerHour", "footPerSecond", "knot"],
+                pressure: ["psi"],
+                energy: ["calorie", "kilocalorie"],
+                digital: ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte", "bit", "kilobit", "megabit"]
+            }
+        };
+        
+        let currentSystem = 'all'; // Default to showing all units
+        
+        // Initialize the form
+        function init() {
+            updateUnitOptions();
+            document.getElementById('fromValue').value = 1;
+            convert();
+        }
+        
+        // Update unit options based on selected category
+        function updateUnitOptions() {
+            const category = document.getElementById('category').value;
+            const fromUnitSelect = document.getElementById('fromUnit');
+            const toUnitSelect = document.getElementById('toUnit');
+            
+            // Clear existing options
+            fromUnitSelect.innerHTML = '';
+            toUnitSelect.innerHTML = '';
+            
+            // Get units for current category
+            const units = unitData[category];
+            
+            // Filter units based on current system if needed
+            let unitsToShow = Object.keys(units);
+            if (currentSystem !== 'all') {
+                unitsToShow = unitSystems[currentSystem][category] || unitsToShow;
+            }
+            
+            // Add new options
+            unitsToShow.forEach(unit => {
+                const displayName = unitDisplayNames[unit] || unit;
+                
+                const fromOption = document.createElement('option');
+                fromOption.value = unit;
+                fromOption.textContent = displayName;
+                fromUnitSelect.appendChild(fromOption);
+                
+                const toOption = document.createElement('option');
+                toOption.value = unit;
+                toOption.textContent = displayName;
+                toUnitSelect.appendChild(toOption);
+            });
+            
+            // Set default selections
+            if (unitsToShow.length > 1) {
+                toUnitSelect.selectedIndex = 1;
+            }
+            
+            convert();
+        }
+        
+        // Convert units
+        function convert() {
+            const category = document.getElementById('category').value;
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const fromValue = parseFloat(document.getElementById('fromValue').value) || 0;
+            
+            let result;
+            
+            if (category === 'temperature') {
+                result = convertTemperature(fromValue, fromUnit, toUnit);
+            } else {
+                const units = unitData[category];
+                if (units[fromUnit] && units[toUnit]) {
+                    result = fromValue * (units[toUnit] / units[fromUnit]);
+                }
+            }
+            
+            document.getElementById('toValue').value = result !== undefined ? result.toFixed(6) : '';
+            
+            updateCommonConversions(category, fromUnit, fromValue);
+        }
+        
+        // Handle temperature conversion separately
+        function convertTemperature(value, fromUnit, toUnit) {
+            if (fromUnit === toUnit) return value;
+            
+            let celsius;
+            
+            // Convert to Celsius first
+            switch (fromUnit) {
+                case 'celsius': celsius = value; break;
+                case 'fahrenheit': celsius = (value - 32) * 5/9; break;
+                case 'kelvin': celsius = value - 273.15; break;
+            }
+            
+            // Convert from Celsius to target unit
+            switch (toUnit) {
+                case 'celsius': return celsius;
+                case 'fahrenheit': return celsius * 9/5 + 32;
+                case 'kelvin': return celsius + 273.15;
+            }
+        }
+        
+        // Update common conversions
+        function updateCommonConversions(category, fromUnit, fromValue) {
+            const commonResults = document.getElementById('commonResults');
+            commonResults.innerHTML = '';
+            
+            const units = unitData[category];
+            
+            // Get units to display based on current system filter
+            let unitsToShow = Object.keys(units);
+            if (currentSystem !== 'all') {
+                unitsToShow = unitSystems[currentSystem][category] || unitsToShow;
+            }
+            
+            // Skip if the value is invalid
+            if (isNaN(fromValue)) return;
+            
+            // Calculate and display common conversions
+            for (const unit of unitsToShow) {
+                if (unit !== fromUnit) {
+                    let result;
+                    
+                    if (category === 'temperature') {
+                        result = convertTemperature(fromValue, fromUnit, unit);
+                    } else {
+                        result = fromValue * (units[unit] / units[fromUnit]);
+                    }
+                    
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    resultItem.innerHTML = `
+                        <span>${fromValue} ${unitDisplayNames[fromUnit]}</span>
+                        <span>=</span>
+                        <span><strong>${result.toFixed(6)}</strong> ${unitDisplayNames[unit]}</span>
+                    `;
+                    
+                    commonResults.appendChild(resultItem);
+                }
+            }
+        }
+        
+        // Swap from and to units
+        function swapUnits() {
+            const fromUnitSelect = document.getElementById('fromUnit');
+            const toUnitSelect = document.getElementById('toUnit');
+            
+            const tempValue = fromUnitSelect.value;
+            fromUnitSelect.value = toUnitSelect.value;
+            toUnitSelect.value = tempValue;
+            
+            convert();
+        }
+        
+        // Set unit system (metric or imperial)
+        function setSystem(system) {
+            currentSystem = system;
+            
+            // Update button appearances
+            document.getElementById('metricBtn').classList.toggle('bg-green-500', system === 'metric');
+            document.getElementById('imperialBtn').classList.toggle('bg-green-500', system === 'imperial');
+            
+            updateUnitOptions();
+        }
+        
+        // Reset all inputs
+        function resetAll() {
+            document.getElementById('fromValue').value = 1;
+            
+            // Reset to default category
+            document.getElementById('category').selectedIndex = 0;
+            
+            // Reset unit system
+            currentSystem = 'all';
+            document.getElementById('metricBtn').classList.remove('bg-green-500');
+            document.getElementById('imperialBtn').classList.remove('bg-green-500');
+            
+            updateUnitOptions();
+        }
+        
+        // Initialize the converter when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
